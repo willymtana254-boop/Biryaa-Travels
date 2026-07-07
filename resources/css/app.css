@@ -1,0 +1,40 @@
+@import "tailwindcss";
+
+@theme {
+    --font-display: "Fraunces", serif;
+    --font-body: "Inter", sans-serif;
+
+    --color-ink: #1c2321;
+    --color-sand: #f2e8d5;
+    --color-paper: #fbf8f2;
+    --color-tide: #0f3d3e;
+    --color-tide-light: #17595a;
+    --color-lagoon: #2e8b8a;
+    --color-rust: #c1502e;
+    --color-rust-light: #d97452;
+}
+
+@layer base {
+    html {
+        font-family: var(--font-body);
+        color: var(--color-ink);
+        background-color: var(--color-paper);
+    }
+
+    h1, h2, h3, h4 {
+        font-family: var(--font-display);
+    }
+
+    :focus-visible {
+        outline: 2px solid var(--color-rust);
+        outline-offset: 2px;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+        *, *::before, *::after {
+            animation-duration: 0.01ms !important;
+            animation-iteration-count: 1 !important;
+            transition-duration: 0.01ms !important;
+        }
+    }
+}

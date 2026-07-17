@@ -3,12 +3,12 @@
 ############################
 # Stage 1: Build frontend assets (Vite)
 ############################
-FROM node:20-alpine AS frontend
+FROM node:20-bookworm-slim AS frontend
 
 WORKDIR /app
 
 COPY package.json package-lock.json ./
-RUN npm ci --legacy-peer-deps
+RUN npm install --legacy-peer-deps
 
 COPY . .
 RUN npm run build

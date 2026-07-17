@@ -4,10 +4,38 @@ import CoastRoute from '../Components/CoastRoute';
 import ListingCard from '../Components/ListingCard';
 
 const services = [
-    { href: '/car-hire', title: 'Self-Drive Car Hire', copy: 'Economy, midsize, SUV and executive vehicles by the day.' },
-    { href: '/airport-transfers', title: 'Airport Transfers', copy: 'Fixed-price rides from Mombasa, Ukunda and Malindi airports.' },
-    { href: '/villas', title: 'Villa Concierge', copy: 'Handpicked beachfront villas and holiday homes.' },
-    { href: '/experiences', title: 'Tours & Experiences', copy: 'Marine parks, old-town walks, golf and private excursions.' },
+    {
+        href: '/car-hire',
+        num: '01',
+        color: 'text-tide',
+        border: 'border-tide',
+        title: 'Self-Drive Car Hire',
+        copy: 'Economy, midsize, SUV and executive vehicles by the day.',
+    },
+    {
+        href: '/airport-transfers',
+        num: '02',
+        color: 'text-rust',
+        border: 'border-rust',
+        title: 'Airport Transfers',
+        copy: 'Fixed-price rides from Mombasa, Ukunda and Malindi airports.',
+    },
+    {
+        href: '/villas',
+        num: '03',
+        color: 'text-lagoon',
+        border: 'border-lagoon',
+        title: 'Villa Concierge',
+        copy: 'Handpicked beachfront villas and holiday homes.',
+    },
+    {
+        href: '/experiences',
+        num: '04',
+        color: 'text-tide-light',
+        border: 'border-tide-light',
+        title: 'Tours & Experiences',
+        copy: 'Marine parks, old-town walks, golf and private excursions.',
+    },
 ];
 
 export default function Home({ locations = [], featuredVehicles = [], featuredVillas = [], featuredTours = [] }) {
@@ -15,35 +43,53 @@ export default function Home({ locations = [], featuredVehicles = [], featuredVi
         <SiteLayout>
             <Head title="Car Hire, Transfers, Villas & Experiences on the Kenyan Coast" />
 
-            <section className="max-w-6xl mx-auto px-6 pt-16 pb-20">
-                <p className="text-rust font-medium text-sm tracking-wide uppercase mb-4">Kenyan Coast, one booking at a time</p>
-                <h1 className="font-display text-5xl md:text-6xl text-tide font-semibold leading-[1.05] max-w-3xl">
-                    Book your coastline, stop by stop.
-                </h1>
-                <p className="mt-6 text-lg text-ink/70 max-w-2xl leading-relaxed">
-                    Self-drive cars, airport transfers, beachfront villas and curated experiences —
-                    reserved online, confirmed in minutes, across Kilifi, Mombasa, Diani, Watamu, Malindi and Vipingo.
-                </p>
-                <div className="mt-8 flex flex-wrap gap-4">
-                    <Link href="/car-hire" className="rounded-full bg-tide text-paper px-6 py-3 font-medium hover:bg-tide-light transition-colors">
-                        Hire a Car
-                    </Link>
-                    <Link href="/villas" className="rounded-full border border-ink/20 px-6 py-3 font-medium hover:border-tide hover:text-tide transition-colors">
-                        Find a Villa
-                    </Link>
-                </div>
+            <section className="relative overflow-hidden min-h-[85vh] flex items-center">
+                <video
+                    className="absolute inset-0 w-full h-full object-cover"
+                    src="/videos/15923194_1080_1920_30fps.mp4"
+                    autoPlay
+                    loop
+                    muted
+                    playsInline
+                    preload="metadata"
+                />
+                <div className="absolute inset-0 bg-gradient-to-r from-ink/70 via-ink/40 to-ink/10" />
 
-                <div className="mt-16 text-tide/70">
-                    <CoastRoute className="w-full max-w-3xl h-28" />
+                <div className="relative max-w-6xl mx-auto px-6 py-24 w-full">
+                    <p className="text-rust font-medium text-sm tracking-wide uppercase mb-4">Kenyan Coast, one booking at a time</p>
+                    <h1 className="font-display text-5xl md:text-6xl text-paper font-semibold leading-[1.05] max-w-3xl">
+                        Book your coastline, stop by stop.
+                    </h1>
+                    <p className="mt-6 text-lg text-paper/80 max-w-2xl leading-relaxed">
+                        Self-drive cars, airport transfers, beachfront villas and curated experiences —
+                        reserved online, confirmed in minutes, across Kilifi, Mombasa, Diani, Watamu, Malindi and Vipingo.
+                    </p>
+                    <div className="mt-8 flex flex-wrap gap-4">
+                        <Link href="/car-hire" className="rounded-full bg-tide text-paper px-6 py-3 font-medium hover:bg-tide-light transition-colors">
+                            Hire a Car
+                        </Link>
+                        <Link href="/villas" className="rounded-full border border-paper/40 text-paper px-6 py-3 font-medium hover:border-paper hover:bg-paper/10 transition-colors">
+                            Find a Villa
+                        </Link>
+                    </div>
+
+                    <div className="mt-16 text-paper hidden md:block">
+                        <CoastRoute className="w-full max-w-3xl h-24" />
+                    </div>
                 </div>
             </section>
 
-            <section className="bg-sand/60 py-16">
+            <section id="services" className="bg-sand/60 py-20">
                 <div className="max-w-6xl mx-auto px-6">
                     <h2 className="font-display text-2xl text-tide font-semibold mb-8">Everything for the trip, in one place</h2>
                     <div className="grid sm:grid-cols-2 md:grid-cols-4 gap-6">
                         {services.map((s) => (
-                            <Link key={s.href} href={s.href} className="block rounded-2xl bg-white/70 border border-ink/10 p-6 hover:-translate-y-0.5 hover:shadow-md transition-all">
+                            <Link
+                                key={s.href}
+                                href={s.href}
+                                className={`block rounded-2xl bg-white/70 border-l-4 ${s.border} border-y border-r border-ink/10 p-6 hover:-translate-y-0.5 hover:shadow-md transition-all`}
+                            >
+                                <span className={`block font-display text-xs font-semibold tracking-widest ${s.color} mb-3`}>{s.num}</span>
                                 <h3 className="font-display text-lg text-tide font-semibold">{s.title}</h3>
                                 <p className="mt-2 text-sm text-ink/60 leading-relaxed">{s.copy}</p>
                             </Link>
@@ -120,14 +166,30 @@ export default function Home({ locations = [], featuredVehicles = [], featuredVi
                 </section>
             )}
 
-            <section className="max-w-6xl mx-auto px-6 py-16">
-                <h2 className="font-display text-2xl text-tide font-semibold mb-8">Where we serve</h2>
-                <div className="flex flex-wrap gap-3">
-                    {locations.map((loc) => (
-                        <span key={loc.id} className="px-4 py-2 rounded-full border border-ink/15 text-sm text-ink/70">
-                            {loc.name}
-                        </span>
-                    ))}
+            <section id="destinations" className="bg-tide py-20">
+                <div className="max-w-6xl mx-auto px-6">
+                    <div className="flex items-baseline justify-between mb-4">
+                        <h2 className="font-display text-2xl text-paper font-semibold">Where we serve</h2>
+                        <span className="text-sm text-paper/50">{locations.length} destinations along the coast</span>
+                    </div>
+                    <p className="text-paper/60 max-w-xl mb-12">
+                        Every booking is anchored to a real stop on the coast — pick a destination or let a
+                        route pick you.
+                    </p>
+
+                    <div className="text-paper">
+                        <CoastRoute className="w-full h-40" />
+                    </div>
+
+                    {locations.length > 0 && (
+                        <div className="mt-10 flex flex-wrap gap-3">
+                            {locations.map((loc) => (
+                                <span key={loc.id} className="px-4 py-2 rounded-full border border-paper/20 text-sm text-paper/70">
+                                    {loc.name}
+                                </span>
+                            ))}
+                        </div>
+                    )}
                 </div>
             </section>
         </SiteLayout>

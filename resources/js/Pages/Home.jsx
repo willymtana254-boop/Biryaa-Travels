@@ -2,41 +2,8 @@ import { Head, Link } from '@inertiajs/react';
 import SiteLayout from '../Layouts/SiteLayout';
 import CoastRoute from '../Components/CoastRoute';
 import ListingCard from '../Components/ListingCard';
-
-const services = [
-    {
-        href: '/car-hire',
-        num: '01',
-        color: 'text-tide',
-        border: 'border-tide',
-        title: 'Self-Drive Car Hire',
-        copy: 'Economy, midsize, SUV and executive vehicles by the day.',
-    },
-    {
-        href: '/airport-transfers',
-        num: '02',
-        color: 'text-rust',
-        border: 'border-rust',
-        title: 'Airport Transfers',
-        copy: 'Fixed-price rides from Mombasa, Ukunda and Malindi airports.',
-    },
-    {
-        href: '/villas',
-        num: '03',
-        color: 'text-lagoon',
-        border: 'border-lagoon',
-        title: 'Villa Concierge',
-        copy: 'Handpicked beachfront villas and holiday homes.',
-    },
-    {
-        href: '/experiences',
-        num: '04',
-        color: 'text-tide-light',
-        border: 'border-tide-light',
-        title: 'Tours & Experiences',
-        copy: 'Marine parks, old-town walks, golf and private excursions.',
-    },
-];
+import AboutServices from '../Components/AboutServices';
+import Testimonials from '../Components/Testimonials';
 
 export default function Home({ locations = [], featuredVehicles = [], featuredVillas = [], featuredTours = [] }) {
     return (
@@ -79,24 +46,7 @@ export default function Home({ locations = [], featuredVehicles = [], featuredVi
                 </div>
             </section>
 
-            <section id="services" className="bg-sand/60 py-20">
-                <div className="max-w-6xl mx-auto px-6">
-                    <h2 className="font-display text-2xl text-tide font-semibold mb-8">Everything for the trip, in one place</h2>
-                    <div className="grid sm:grid-cols-2 md:grid-cols-4 gap-6">
-                        {services.map((s) => (
-                            <Link
-                                key={s.href}
-                                href={s.href}
-                                className={`block rounded-2xl bg-white/70 border-l-4 ${s.border} border-y border-r border-ink/10 p-6 hover:-translate-y-0.5 hover:shadow-md transition-all`}
-                            >
-                                <span className={`block font-display text-xs font-semibold tracking-widest ${s.color} mb-3`}>{s.num}</span>
-                                <h3 className="font-display text-lg text-tide font-semibold">{s.title}</h3>
-                                <p className="mt-2 text-sm text-ink/60 leading-relaxed">{s.copy}</p>
-                            </Link>
-                        ))}
-                    </div>
-                </div>
-            </section>
+            <AboutServices />
 
             {featuredVehicles.length > 0 && (
                 <section className="max-w-6xl mx-auto px-6 py-16">
@@ -165,6 +115,8 @@ export default function Home({ locations = [], featuredVehicles = [], featuredVi
                     </div>
                 </section>
             )}
+
+            <Testimonials />
 
             <section id="destinations" className="bg-tide py-20">
                 <div className="max-w-6xl mx-auto px-6">

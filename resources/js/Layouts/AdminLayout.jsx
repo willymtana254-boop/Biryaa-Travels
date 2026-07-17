@@ -10,7 +10,11 @@ export default function AdminLayout({ children }) {
         <div className="min-h-screen bg-sand/40 text-ink">
             <header className="bg-tide text-paper">
                 <div className="max-w-6xl mx-auto px-6 h-14 flex items-center justify-between text-sm">
-                    <span className="font-display font-semibold">Biryaa Travels · Admin</span>
+                    <div className="flex items-center gap-3">
+                        <img src="/images/biryaa-logo-white.png" alt="Biryaa Travels" className="h-24 w-auto" />
+                        <span className="text-paper/50">·</span>
+                        <span className="font-medium text-paper/80">Admin</span>
+                    </div>
                     <nav className="flex items-center gap-6">
                         {nav.map((item) => (
                             <Link key={item.href} href={item.href} className="text-paper/80 hover:text-paper">{item.label}</Link>

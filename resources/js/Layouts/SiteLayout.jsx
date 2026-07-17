@@ -33,8 +33,8 @@ export default function SiteLayout({ children }) {
                                 <line x1="3" y1="18" x2="21" y2="18" />
                             </svg>
                         </button>
-                        <Link href="/" className="font-display text-xl font-semibold text-tide tracking-tight">
-                            Biryaa <span className="text-rust">Travels</span>
+                        <Link href="/" className="flex items-center">
+                            <img src="/images/biryaa-logo-tide.png" alt="Biryaa Travels" className="h-24 w-auto" />
                         </Link>
                     </div>
 
@@ -57,16 +57,6 @@ export default function SiteLayout({ children }) {
                         ) : (
                             <Link href="/login" className="text-ink/70 hover:text-tide">Log in</Link>
                         )}
-
-                        
-                        <a
-                            href="https://wa.me/254728769798"
-                            target="_blank"
-                            rel="noreferrer"
-                            className="hidden sm:inline-flex items-center rounded-full bg-tide px-4 py-2 font-medium text-paper hover:bg-tide-light transition-colors"
-                        >
-                            WhatsApp Us
-                        </a>
                     </div>
                 </div>
             </header>
@@ -83,9 +73,7 @@ export default function SiteLayout({ children }) {
                     className={`absolute left-0 top-0 h-full w-72 bg-paper shadow-xl flex flex-col transition-transform duration-300 ${menuOpen ? 'translate-x-0' : '-translate-x-full'}`}
                 >
                     <div className="flex items-center justify-between px-5 h-16 border-b border-ink/10">
-                        <span className="font-display text-lg font-semibold text-tide">
-                            Biryaa <span className="text-rust">Travels</span>
-                        </span>
+                        <img src="/images/biryaa-logo-tide.png" alt="Biryaa Travels" className="h-24 w-auto" />
                         <button
                             type="button"
                             onClick={() => setMenuOpen(false)}
@@ -122,16 +110,6 @@ export default function SiteLayout({ children }) {
                                 Log in
                             </Link>
                         )}
-
-                        
-                        <a
-                            href="https://wa.me/254728769798"
-                            target="_blank"
-                            rel="noreferrer"
-                            className="block w-full text-center rounded-full bg-tide px-4 py-2.5 font-medium text-paper"
-                        >
-                            WhatsApp Us
-                        </a>
                     </div>
                 </div>
             </div>
@@ -144,10 +122,24 @@ export default function SiteLayout({ children }) {
 
             <main className="flex-1">{children}</main>
 
+            <a
+                href="https://wa.me/254728769798"
+                target="_blank"
+                rel="noreferrer"
+                aria-label="Chat with us on WhatsApp"
+                className="fixed bottom-6 right-6 z-50 flex items-center justify-center w-14 h-14 rounded-full bg-[#25D366] shadow-lg shadow-ink/20 hover:scale-105 active:scale-95 transition-transform"
+            >
+                <span className="absolute inset-0 rounded-full bg-[#25D366] animate-ping opacity-30" />
+                <svg width="28" height="28" viewBox="0 0 24 24" fill="white" className="relative">
+                    <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51-.173-.008-.371-.01-.57-.01-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.626.712.226 1.36.194 1.872.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.29.173-1.414-.074-.124-.272-.198-.57-.347z" />
+                    <path d="M12.001 2C6.478 2 2 6.477 2 12c0 1.876.52 3.63 1.42 5.13L2 22l4.98-1.393A9.947 9.947 0 0012.001 22C17.523 22 22 17.523 22 12S17.523 2 12.001 2zm0 18.2c-1.649 0-3.185-.487-4.472-1.324l-.32-.204-3.106.868.83-3.03-.21-.312a8.19 8.19 0 01-1.322-4.198c0-4.53 3.688-8.2 8.2-8.2 4.51 0 8.199 3.67 8.199 8.2 0 4.529-3.689 8.2-8.2 8.2z" />
+                </svg>
+            </a>
+
             <footer className="border-t border-ink/10 bg-tide text-paper/90">
                 <div className="max-w-6xl mx-auto px-6 py-12 grid gap-10 sm:grid-cols-2 md:grid-cols-4 text-sm">
                     <div>
-                        <p className="font-display text-lg text-paper mb-2">Biryaa Travels</p>
+                        <img src="/images/biryaa-logo-white.png" alt="Biryaa Travels" className="h-24 w-auto mb-3" />
                         <p className="text-paper/70 leading-relaxed">
                             Car hire, airport transfers, villas and curated experiences across the Kenyan Coast.
                         </p>

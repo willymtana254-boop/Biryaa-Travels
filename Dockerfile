@@ -33,16 +33,26 @@ RUN composer install \
 ############################
 # Stage 3: Runtime image
 ############################
-FROM php:8.3-fpm-alpine AS app
+FROM php:8.4-fpm-alpine AS app
 
 # System dependencies + PHP extensions Laravel typically needs.
-# Add/remove extensions here to match your app (e.g. pdo_pgsql, redis, gd).
+# Runtime libs (libpng, libpq, libzip, etc.) are installed explicitly so they
+# survive the cleanup step below — the -dev packages alone would pull them in
+# only as transient build dependencies and they'd get purged along with them.
 RUN apk add --no-cache \
         nginx \
         supervisor \
         bash \
         curl \
         gettext \
+        libpng \
+        libjpeg-turbo \
+        freetype \
+        libzip \
+        libxml2 \
+        oniguruma \
+        postgresql-libs \
+    && apk add --no-cache --virtual .build-deps \
         libpng-dev \
         libjpeg-turbo-dev \
         freetype-dev \
@@ -61,7 +71,7 @@ RUN apk add --no-cache \
         gd \
         zip \
         opcache \
-    && apk del --no-cache libpng-dev libjpeg-turbo-dev freetype-dev libzip-dev libxml2-dev oniguruma-dev postgresql-dev
+    && apk del .build-deps
 
 # Recommended production PHP/OPcache settings
 RUN { \

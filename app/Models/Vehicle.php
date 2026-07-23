@@ -5,6 +5,7 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\MorphMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
 
 class Vehicle extends Model
 {
@@ -24,6 +25,20 @@ class Vehicle extends Model
     public function bookings(): MorphMany
     {
         return $this->morphMany(Booking::class, 'bookable');
+    }
+
+    public function currentDriver(): HasOne
+    {
+    return $this->hasOne(Driver::class);
+    }
+
+    public function isCurrentlyBooked(): bool
+    {
+    return $this->bookings()
+        ->whereIn('status', ['pending', 'confirmed'])
+        ->where('start_date', '<=', now())
+        ->where('end_date', '>=', now())
+        ->exists();
     }
 
     public function isAvailableBetween(string $start, string $end): bool

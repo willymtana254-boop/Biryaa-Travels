@@ -20,7 +20,7 @@ class TransferController extends Controller
 
         return Inertia::render('Transfers/Index', [
             'routes' => $routes,
-            'locations' => Location::orderBy('name')->get(['id', 'name', 'slug']),
+            'locations' => Location::orderBy('type')->orderBy('name')->get(['id', 'name', 'slug', 'type']),
             'filters' => $request->only('from', 'to'),
         ]);
     }

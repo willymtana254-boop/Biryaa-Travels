@@ -2,6 +2,8 @@ import { Head, Link } from '@inertiajs/react';
 import SiteLayout from '../../Layouts/SiteLayout';
 
 export default function VehiclesShow({ vehicle }) {
+    const available = vehicle.availability.status === 'available';
+
     return (
         <SiteLayout>
             <Head title={vehicle.name} />
@@ -19,6 +21,12 @@ export default function VehiclesShow({ vehicle }) {
                     <p className="text-rust font-medium text-sm uppercase tracking-wide mb-2">{vehicle.category}</p>
                     <h1 className="font-display text-3xl text-tide font-semibold">{vehicle.name}</h1>
                     <p className="mt-3 text-ink/60">{vehicle.seats} seats · {vehicle.transmission} transmission</p>
+
+                    <div className={`mt-4 inline-flex items-center gap-2 px-4 py-2 rounded-full text-sm font-medium ${available ? 'bg-lagoon/10 text-tide' : 'bg-rust/10 text-rust'}`}>
+                        <span className={`w-2 h-2 rounded-full ${available ? 'bg-lagoon' : 'bg-rust'}`} />
+                        {available ? 'Available now' : `Booked until ${vehicle.availability.available_from}`}
+                    </div>
+
                     <p className="mt-6 text-ink/70 leading-relaxed">{vehicle.description || 'A reliable, well-maintained vehicle ready for your coastal journey.'}</p>
 
                     <div className="mt-8 flex items-baseline gap-2">
@@ -30,7 +38,7 @@ export default function VehiclesShow({ vehicle }) {
                         href={`/book/vehicle/${vehicle.id}`}
                         className="mt-6 inline-flex items-center rounded-full bg-tide text-paper px-6 py-3 font-medium hover:bg-tide-light transition-colors"
                     >
-                        Book this vehicle
+                        {available ? 'Book this vehicle' : 'Request this vehicle'}
                     </Link>
                 </div>
             </div>

@@ -12,37 +12,71 @@ class TransferRouteSeeder extends Seeder
     {
         $byName = fn (string $name) => Location::where('name', $name)->first()?->id;
 
-        // Mombasa Airport is modeled as a stop within "Mombasa" for simplicity.
-        $routes = [
-            ['from' => 'Mombasa', 'to' => 'Kilifi', 'vehicle_category' => 'sedan', 'price' => 40, 'distance_km' => 60, 'duration_minutes' => 75],
-            ['from' => 'Mombasa', 'to' => 'Diani', 'vehicle_category' => 'sedan', 'price' => 35, 'distance_km' => 45, 'duration_minutes' => 60],
-            ['from' => 'Mombasa', 'to' => 'Watamu', 'vehicle_category' => 'suv', 'price' => 55, 'distance_km' => 105, 'duration_minutes' => 120],
-            ['from' => 'Mombasa', 'to' => 'Malindi', 'vehicle_category' => 'suv', 'price' => 60, 'distance_km' => 120, 'duration_minutes' => 135],
-            ['from' => 'Malindi', 'to' => 'Watamu', 'vehicle_category' => 'sedan', 'price' => 20, 'distance_km' => 25, 'duration_minutes' => 30],
-            ['from' => 'Malindi', 'to' => 'Kilifi', 'vehicle_category' => 'sedan', 'price' => 30, 'distance_km' => 55, 'duration_minutes' => 60],
-            ['from' => 'Diani', 'to' => 'Mombasa', 'vehicle_category' => 'mini_van', 'price' => 45, 'distance_km' => 45, 'duration_minutes' => 60],
-            ['from' => 'Mombasa', 'to' => 'Vipingo', 'vehicle_category' => 'sedan', 'price' => 30, 'distance_km' => 40, 'duration_minutes' => 50],
+        // hub => [town => [vehicle_category, price, distance_km, duration_minutes]]
+        $matrix = [
+            'Moi International Airport (MBA)' => [
+                'Mombasa' => ['sedan', 25, 15, 25],
+                'Kilifi' => ['sedan', 40, 60, 75],
+                'Diani' => ['sedan', 35, 45, 60],
+                'Watamu' => ['suv', 55, 105, 120],
+                'Malindi' => ['suv', 60, 120, 135],
+                'Vipingo' => ['sedan', 30, 40, 50],
+            ],
+            'Malindi Airport (MYD)' => [
+                'Malindi' => ['sedan', 15, 8, 15],
+                'Watamu' => ['sedan', 20, 25, 30],
+                'Kilifi' => ['sedan', 30, 55, 60],
+            ],
+            'Ukunda Airport (UUK)' => [
+                'Diani' => ['sedan', 15, 8, 15],
+                'Mombasa' => ['mini_van', 45, 45, 60],
+            ],
+            'Mombasa SGR Terminus' => [
+                'Mombasa' => ['sedan', 20, 20, 30],
+                'Kilifi' => ['sedan', 42, 65, 80],
+                'Diani' => ['sedan', 38, 50, 65],
+                'Watamu' => ['suv', 58, 110, 125],
+                'Malindi' => ['suv', 63, 125, 140],
+                'Vipingo' => ['sedan', 32, 45, 55],
+            ],
+            'Mariakani SGR Station' => [
+                'Mombasa' => ['sedan', 25, 35, 45],
+                'Kilifi' => ['sedan', 35, 50, 60],
+            ],
+            'Miasenyi & Voi SGR Station' => [
+                'Mombasa' => ['suv', 60, 150, 150],
+                'Diani' => ['suv', 65, 165, 165],
+            ],
         ];
 
-        foreach ($routes as $route) {
-            $fromId = $byName($route['from']);
-            $toId = $byName($route['to']);
-            if (! $fromId || ! $toId) {
+        foreach ($matrix as $hubName => $towns) {
+            $hubId = $byName($hubName);
+            if (! $hubId) {
                 continue;
             }
 
-            TransferRoute::updateOrCreate(
-                [
-                    'from_location_id' => $fromId,
-                    'to_location_id' => $toId,
-                    'vehicle_category' => $route['vehicle_category'],
-                ],
-                [
-                    'price' => $route['price'],
-                    'distance_km' => $route['distance_km'],
-                    'duration_minutes' => $route['duration_minutes'],
-                ]
-            );
+            foreach ($towns as $townName => [$category, $price, $distance, $duration]) {
+                $townId = $byName($townName);
+                if (! $townId) {
+                    continue;
+                }
+
+                // Seed both directions so lookups work regardless of which side is "from".
+                foreach ([[$hubId, $townId], [$townId, $hubId]] as [$fromId, $toId]) {
+                    TransferRoute::updateOrCreate(
+                        [
+                            'from_location_id' => $fromId,
+                            'to_location_id' => $toId,
+                            'vehicle_category' => $category,
+                        ],
+                        [
+                            'price' => $price,
+                            'distance_km' => $distance,
+                            'duration_minutes' => $duration,
+                        ]
+                    );
+                }
+            }
         }
     }
 }

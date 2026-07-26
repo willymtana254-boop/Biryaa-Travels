@@ -10,7 +10,17 @@ class Location extends Model
 {
     use HasFactory;
 
-    protected $fillable = ['name', 'slug', 'tagline', 'description', 'hero_image'];
+    protected $fillable = ['name', 'slug', 'type', 'tagline', 'description', 'hero_image'];
+    
+    public function scopeHubs($query)
+    {
+        return $query->where('type', 'hub');
+    }
+
+    public function scopeTowns($query)
+    {
+       return $query->where('type', 'town');
+    }
 
     public function villas(): HasMany
     {

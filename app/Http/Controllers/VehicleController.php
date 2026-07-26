@@ -12,6 +12,7 @@ class VehicleController extends Controller
     public function index(Request $request): Response
     {
         $vehicles = Vehicle::query()
+            ->with(['bookings' => fn ($q) => $q->whereIn('status', ['pending', 'confirmed'])])
             ->where('is_available', true)
             ->when($request->category, fn ($q, $category) => $q->where('category', $category))
             ->orderBy('price_per_day')
@@ -26,6 +27,8 @@ class VehicleController extends Controller
 
     public function show(Vehicle $vehicle): Response
     {
+        $vehicle->load(['bookings' => fn ($q) => $q->whereIn('status', ['pending', 'confirmed'])]);
+
         return Inertia::render('Vehicles/Show', [
             'vehicle' => $vehicle,
         ]);

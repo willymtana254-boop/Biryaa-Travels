@@ -35,11 +35,17 @@ export default function VehiclesIndex({ vehicles, categories, filters }) {
                                 <ListingCard
                                     key={v.id}
                                     href={`/car-hire/${v.id}`}
+                                    image={v.images?.[0]}
                                     title={v.name}
                                     eyebrow={v.category}
                                     meta={`${v.seats} seats · ${v.transmission}`}
                                     price={v.price_per_day}
                                     priceLabel="/ day"
+                                    badge={
+                                        v.availability.status === 'available'
+                                            ? { label: 'Available now', tone: 'available' }
+                                            : { label: `Booked until ${v.availability.available_from}`, tone: 'booked' }
+                                    }
                                 />
                             ))}
                         </div>

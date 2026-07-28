@@ -6,7 +6,7 @@ const nav = [
     { href: '/airport-transfers', label: 'Transfers' },
     { href: '/villas', label: 'Villas' },
     { href: '/experiences', label: 'Experiences' },
-    { href: '/#services', label: 'About Us & Services' },
+    { href: '/home#services', label: 'About Us & Services' },
     { href: '/destinations', label: 'Explore Destinations' },
 ];
 
@@ -33,8 +33,8 @@ export default function SiteLayout({ children }) {
                                 <line x1="3" y1="18" x2="21" y2="18" />
                             </svg>
                         </button>
-                        <Link href="/" className="flex items-center">
-                            <img src="/images/biryaa-logo-tide.png" alt="Biryaa Travels" className="h-34 w-auto" />
+                        <Link href="/home" className="flex items-center">
+                            <img src="/images/biryaa-logo-tide.png" alt="Biryaa Travels" className="h-24 w-auto" />
                         </Link>
                     </div>
 
@@ -47,19 +47,17 @@ export default function SiteLayout({ children }) {
                     </nav>
 
                     <div className="flex items-center gap-4 text-sm">
-                        {user ? (
-                            <>
-                                <span className="hidden sm:inline text-ink/60">Hi, {user.name.split(' ')[0]}</span>
-                                <Link href="/account/bookings" className="text-ink/70 hover:text-tide">
-                                    My Bookings
-                                </Link>
-                                <Link href="/logout" method="post" as="button" className="text-ink/70 hover:text-rust">
-                                    Log out
-                                </Link>
-                            </>
-                        ) : (
-                            <Link href="/login" className="text-ink/70 hover:text-tide">Log in</Link>
-                        )}
+                        {user && (
+                       <>
+                            <span className="hidden sm:inline text-ink/60">Hi, {user.name.split(' ')[0]}</span>
+                         <Link href="/account/bookings" className="text-ink/70 hover:text-tide">
+                               My Bookings
+                          </Link>
+                            <Link href="/logout" method="post" as="button" className="text-ink/70 hover:text-rust">
+                                   Log out
+                             </Link>
+                       </>
+                     )}
                     </div>
                 </div>
             </header>

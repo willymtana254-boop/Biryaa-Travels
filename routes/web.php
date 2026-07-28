@@ -20,7 +20,8 @@ use Illuminate\Support\Facades\Route;
 | Public booking site
 |--------------------------------------------------------------------------
 */
-Route::get('/', HomeController::class)->name('home');
+Route::get('/', \App\Http\Controllers\WelcomeController::class)->name('welcome');
+Route::get('/home', HomeController::class)->name('home');
 
 Route::get('/destinations', [DestinationController::class, 'index'])->name('destinations.index');
 

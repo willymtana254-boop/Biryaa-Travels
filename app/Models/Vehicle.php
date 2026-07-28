@@ -53,6 +53,11 @@ class Vehicle extends Model
         ];
     }
 
+    public function driver(): \Illuminate\Database\Eloquent\Relations\HasOne
+        {
+         return $this->hasOne(Driver::class);
+        }
+
     public function isAvailableBetween(string $start, string $end): bool
     {
         if (! $this->is_available) {

@@ -1,4 +1,4 @@
-import { Head, router } from '@inertiajs/react';
+import { Head, Link, router } from '@inertiajs/react';
 import AdminLayout from '../../../Layouts/AdminLayout';
 
 const statuses = ['pending', 'confirmed', 'cancelled', 'completed'];
@@ -29,7 +29,11 @@ export default function BookingsIndex({ bookings }) {
                     <tbody className="divide-y divide-ink/10">
                         {bookings.data.map((b) => (
                             <tr key={b.id}>
-                                <td className="px-5 py-3 font-mono text-xs">{b.reference}</td>
+                                <td className="px-5 py-3 font-mono text-xs">
+                                    <Link href={`/admin/bookings/${b.id}`} className="text-tide hover:underline">
+                                      {b.reference}
+                                   </Link>
+                               </td>
                                 <td className="px-5 py-3">
                                     <p className="font-medium">{b.customer_name}</p>
                                     <p className="text-ink/50 text-xs">{b.customer_email}</p>

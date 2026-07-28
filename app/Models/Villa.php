@@ -12,8 +12,9 @@ class Villa extends Model
     use HasFactory;
 
     protected $fillable = [
-        'location_id', 'name', 'slug', 'description', 'price_per_night',
-        'bedrooms', 'bathrooms', 'max_guests', 'amenities', 'images', 'is_available',
+       'location_id', 'name', 'slug', 'description', 'contact_name', 'contact_phone',
+        'commission_rate', 'price_per_night', 'bedrooms', 'bathrooms', 'max_guests',
+        'amenities', 'images', 'is_available',
     ];
 
     protected $casts = [
@@ -21,6 +22,7 @@ class Villa extends Model
         'images' => 'array',
         'is_available' => 'boolean',
         'price_per_night' => 'decimal:2',
+        'commission_rate' => 'decimal:2',
     ];
 
     public function location(): BelongsTo

@@ -1,11 +1,9 @@
 import { Head, Link } from '@inertiajs/react';
 import SiteLayout from '../Layouts/SiteLayout';
 import CoastRoute from '../Components/CoastRoute';
-import ListingCard from '../Components/ListingCard';
 import AboutServices from '../Components/AboutServices';
-import Testimonials from '../Components/Testimonials';
 
-export default function Home({ locations = [], featuredVehicles = [], featuredVillas = [], featuredTours = [] }) {
+export default function Home({ locations = [] }) {
     return (
         <SiteLayout>
             <Head title="Car Hire, Transfers, Villas & Experiences on the Kenyan Coast" />
@@ -47,103 +45,6 @@ export default function Home({ locations = [], featuredVehicles = [], featuredVi
             </section>
 
             <AboutServices />
-
-            {featuredVehicles.length > 0 && (
-                <section className="max-w-6xl mx-auto px-6 py-16">
-                    <div className="flex items-baseline justify-between mb-8">
-                        <h2 className="font-display text-2xl text-tide font-semibold">Popular vehicles</h2>
-                        <Link href="/car-hire" className="text-sm font-medium text-rust hover:underline">View all →</Link>
-                    </div>
-                    <div className="grid sm:grid-cols-2 md:grid-cols-3 gap-6">
-                        {featuredVehicles.map((v) => (
-                            <ListingCard
-                                key={v.id}
-                                href={`/car-hire/${v.id}`}
-                                title={v.name}
-                                eyebrow={v.category}
-                                meta={`${v.seats} seats · ${v.transmission}`}
-                                price={v.price_per_day}
-                                priceLabel="/ day"
-                            />
-                        ))}
-                    </div>
-                </section>
-            )}
-
-            {featuredVillas.length > 0 && (
-                <section className="bg-tide/5 py-16">
-                    <div className="max-w-6xl mx-auto px-6">
-                        <div className="flex items-baseline justify-between mb-8">
-                            <h2 className="font-display text-2xl text-tide font-semibold">Featured villas</h2>
-                            <Link href="/villas" className="text-sm font-medium text-rust hover:underline">View all →</Link>
-                        </div>
-                        <div className="grid sm:grid-cols-2 md:grid-cols-3 gap-6">
-                            {featuredVillas.map((v) => (
-                                <ListingCard
-                                    key={v.id}
-                                    href={`/villas/${v.slug}`}
-                                    title={v.name}
-                                    eyebrow={v.location?.name}
-                                    meta={`${v.bedrooms} bed · sleeps ${v.max_guests}`}
-                                    price={v.price_per_night}
-                                    priceLabel="/ night"
-                                />
-                            ))}
-                        </div>
-                    </div>
-                </section>
-            )}
-
-            {featuredTours.length > 0 && (
-                <section className="max-w-6xl mx-auto px-6 py-16">
-                    <div className="flex items-baseline justify-between mb-8">
-                        <h2 className="font-display text-2xl text-tide font-semibold">Experiences worth the trip</h2>
-                        <Link href="/experiences" className="text-sm font-medium text-rust hover:underline">View all →</Link>
-                    </div>
-                    <div className="grid sm:grid-cols-2 md:grid-cols-3 gap-6">
-                        {featuredTours.map((t) => (
-                            <ListingCard
-                                key={t.id}
-                                href={`/experiences/${t.slug}`}
-                                title={t.name}
-                                eyebrow={t.location?.name}
-                                meta={`${t.duration_hours}h · ${t.category}`}
-                                price={t.price}
-                                priceLabel="/ person"
-                            />
-                        ))}
-                    </div>
-                </section>
-            )}
-
-            <Testimonials />
-
-            <section id="destinations" className="bg-tide py-20">
-                <div className="max-w-6xl mx-auto px-6">
-                    <div className="flex items-baseline justify-between mb-4">
-                        <h2 className="font-display text-2xl text-paper font-semibold">Where we serve</h2>
-                        <span className="text-sm text-paper/50">{locations.length} destinations along the coast</span>
-                    </div>
-                    <p className="text-paper/60 max-w-xl mb-12">
-                        Every booking is anchored to a real stop on the coast — pick a destination or let a
-                        route pick you.
-                    </p>
-
-                    <div className="text-paper">
-                        <CoastRoute className="w-full h-40" />
-                    </div>
-
-                    {locations.length > 0 && (
-                        <div className="mt-10 flex flex-wrap gap-3">
-                            {locations.map((loc) => (
-                                <span key={loc.id} className="px-4 py-2 rounded-full border border-paper/20 text-sm text-paper/70">
-                                    {loc.name}
-                                </span>
-                            ))}
-                        </div>
-                    )}
-                </div>
-            </section>
         </SiteLayout>
     );
 }

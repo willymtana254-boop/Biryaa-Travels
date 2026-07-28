@@ -21,7 +21,7 @@ class TourController extends Controller
 
         return Inertia::render('Tours/Index', [
             'tours' => $tours,
-            'locations' => Location::orderBy('name')->get(['id', 'name', 'slug']),
+            'locations' => Location::towns()->orderBy('name')->get(['id', 'name', 'slug']),
             'categories' => ['marine', 'cultural', 'city', 'golf', 'wildlife'],
             'filters' => $request->only('category', 'location'),
         ]);

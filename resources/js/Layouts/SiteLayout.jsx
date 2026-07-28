@@ -7,7 +7,7 @@ const nav = [
     { href: '/villas', label: 'Villas' },
     { href: '/experiences', label: 'Experiences' },
     { href: '/#services', label: 'About Us & Services' },
-    { href: '/#destinations', label: 'Explore Destinations' },
+    { href: '/destinations', label: 'Explore Destinations' },
 ];
 
 export default function SiteLayout({ children }) {

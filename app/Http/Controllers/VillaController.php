@@ -21,7 +21,7 @@ class VillaController extends Controller
 
         return Inertia::render('Villas/Index', [
             'villas' => $villas,
-            'locations' => Location::orderBy('name')->get(['id', 'name', 'slug']),
+            'locations' => Location::towns()->orderBy('name')->get(['id', 'name', 'slug']),
             'filters' => $request->only('location', 'guests'),
         ]);
     }

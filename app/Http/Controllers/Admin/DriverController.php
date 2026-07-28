@@ -20,7 +20,7 @@ class DriverController extends Controller
             'drivers' => $drivers,
             // Vehicles a driver could be assigned to: any car without a driver already.
             'unassignedVehicles' => Vehicle::query()
-                ->whereDoesntHave('currentDriver')
+                ->whereDoesntHave('driver')
                 ->orderBy('name')
                 ->get(['id', 'name', 'category']),
         ]);

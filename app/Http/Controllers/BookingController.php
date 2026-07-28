@@ -71,22 +71,29 @@ class BookingController extends Controller
             : 1;
 
         $booking = Booking::create([
-            'user_id' => $request->user()?->id,
-            'bookable_type' => $modelClass,
-            'bookable_id' => $bookable->id,
-            'customer_name' => $data['customer_name'],
-            'customer_email' => $data['customer_email'],
-            'customer_phone' => $data['customer_phone'],
-            'start_date' => $data['start_date'],
-            'end_date' => $data['end_date'] ?? $data['start_date'],
-            'guests' => $data['guests'] ?? null,
-            'total_price' => $unitPrice * $nights,
-            'status' => 'pending',
-            'payment_status' => 'unpaid',
-            'notes' => $data['notes'] ?? null,
-        ]);
+    'user_id' => $request->user()?->id,
+    'bookable_type' => $modelClass,
+    'bookable_id' => $bookable->id,
+    'customer_name' => $data['customer_name'],
+    'customer_email' => $data['customer_email'],
+    'customer_phone' => $data['customer_phone'],
+    'start_date' => $data['start_date'],
+    'end_date' => $data['end_date'] ?? $data['start_date'],
+    'guests' => $data['guests'] ?? null,
+    'total_price' => $unitPrice * $nights,
+    'status' => 'pending',
+    'payment_status' => 'unpaid',
+    'notes' => $data['notes'] ?? null,
+]);
 
-        return redirect()->route('bookings.confirmation', $booking->reference);
+if ($modelClass === \App\Models\Vehicle::class) {
+    $driver = \App\Models\Driver::where('vehicle_id', $bookable->id)->first();
+    if ($driver) {
+        \App\Models\Notification::forDriverJob($driver, $booking);
+    }
+}
+
+return redirect()->route('bookings.confirmation', $booking->reference);
     }
 
     public function confirmation(string $reference): Response

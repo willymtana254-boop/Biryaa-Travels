@@ -1,16 +1,19 @@
 <?php
 
-// Admin controllers referenced by class name strings to avoid static analysis errors
+use App\Http\Controllers\Account\BookingController as AccountBookingController;
+use App\Http\Controllers\Admin\BookingController as AdminBookingController;
+use App\Http\Controllers\Admin\DashboardController as AdminDashboardController;
+use App\Http\Controllers\Admin\DriverController;
+use App\Http\Controllers\Admin\NotificationController as AdminNotificationController;
+use App\Http\Controllers\Admin\VehicleController as AdminVehicleController;
 use App\Http\Controllers\BookingController;
+use App\Http\Controllers\DestinationController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\TourController;
 use App\Http\Controllers\TransferController;
 use App\Http\Controllers\VehicleController;
 use App\Http\Controllers\VillaController;
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\Account\BookingController as AccountBookingController;
-use App\Http\Controllers\Admin\DriverController;
-use App\Http\Controllers\Admin\VehicleController as AdminVehicleController;
 
 /*
 |--------------------------------------------------------------------------
@@ -18,6 +21,8 @@ use App\Http\Controllers\Admin\VehicleController as AdminVehicleController;
 |--------------------------------------------------------------------------
 */
 Route::get('/', HomeController::class)->name('home');
+
+Route::get('/destinations', [DestinationController::class, 'index'])->name('destinations.index');
 
 Route::get('/car-hire', [VehicleController::class, 'index'])->name('vehicles.index');
 Route::get('/car-hire/{vehicle}', [VehicleController::class, 'show'])->name('vehicles.show');
@@ -35,28 +40,35 @@ Route::post('/bookings', [BookingController::class, 'store'])->name('bookings.st
 Route::get('/bookings/{reference}/confirmation', [BookingController::class, 'confirmation'])->name('bookings.confirmation');
 
 Route::middleware('auth')->prefix('account')->name('account.')->group(function () {
-Route::get('/bookings', [AccountBookingController::class, 'index'])->name('bookings');
+    Route::get('/bookings', [AccountBookingController::class, 'index'])->name('bookings');
 });
+
 /*
 |--------------------------------------------------------------------------
 | Admin back-office
 |--------------------------------------------------------------------------
 */
 Route::prefix('admin')->name('admin.')->middleware(['auth', 'admin'])->group(function () {
-    // Use class name strings for admin controllers to avoid static analysis errors
-    Route::get('/', 'App\\Http\\Controllers\\Admin\\DashboardController')->name('dashboard');
+    Route::get('/', AdminDashboardController::class)->name('dashboard');
 
-    Route::get('bookings', ['App\\Http\\Controllers\\Admin\\BookingController', 'index'])->name('bookings.index');
-    Route::patch('bookings/{booking}', ['App\\Http\\Controllers\\Admin\\BookingController', 'update'])->name('bookings.update');
+    Route::get('bookings', [AdminBookingController::class, 'index'])->name('bookings.index');
+    Route::get('bookings/{booking}', [AdminBookingController::class, 'show'])->name('bookings.show');
+    Route::patch('bookings/{booking}', [AdminBookingController::class, 'update'])->name('bookings.update');
+    Route::post('bookings/{booking}/assign-transfer-driver', [AdminNotificationController::class, 'assignTransferDriver'])->name('bookings.assign-transfer-driver');
 
     Route::get('vehicles', [AdminVehicleController::class, 'index'])->name('vehicles.index');
     Route::get('vehicles/create', [AdminVehicleController::class, 'create'])->name('vehicles.create');
     Route::post('vehicles', [AdminVehicleController::class, 'store'])->name('vehicles.store');
+    Route::post('vehicles/{vehicle}/assign-driver', [AdminVehicleController::class, 'assignDriver'])->name('vehicles.assign-driver');
+    Route::post('vehicles/{vehicle}/deassign-driver', [AdminVehicleController::class, 'deassignDriver'])->name('vehicles.deassign-driver');
 
     Route::get('drivers', [DriverController::class, 'index'])->name('drivers.index');
     Route::get('drivers/create', [DriverController::class, 'create'])->name('drivers.create');
     Route::post('drivers', [DriverController::class, 'store'])->name('drivers.store');
     Route::patch('drivers/{driver}/assign', [DriverController::class, 'assign'])->name('drivers.assign');
+
+    Route::get('notifications', [AdminNotificationController::class, 'index'])->name('notifications.index');
+    Route::patch('notifications/{notification}/mark-sent', [AdminNotificationController::class, 'markSent'])->name('notifications.mark-sent');
 });
 
 require __DIR__.'/auth.php';

@@ -24,17 +24,18 @@ export default function NotificationsIndex({ notifications }) {
                             {n.status}
                         </span>
                         <div className="flex items-center gap-2 shrink-0">
-                            
-                           <a> href={`https://wa.me/${n.phone.replace(/\D/g, '')}?text=${encodeURIComponent(n.message)}`}
-                                target="_blank"
-                                rel="noreferrer"
-                                onClick={() => n.status === 'pending' && markSent(n.id)}
-                                className="rounded-full bg-tide text-paper px-4 py-1.5 text-sm font-medium hover:bg-tide-light"
-                            
-                                Send on WhatsApp
-                            </a>
+    
+                           <a href={`https://wa.me/${n.phone.replace(/\D/g, '')}?text=${encodeURIComponent(n.message)}`}
+                              target="_blank"
+                             rel="noreferrer"
+                             onClick={() => n.status === 'pending' && markSent(n.id)}
+                             className="rounded-full bg-tide text-paper px-4 py-1.5 text-sm font-medium hover:bg-tide-light"
+                            >
+                             Send on WhatsApp
+                          </a>
                         </div>
                     </div>
+                
                 ))}
             </div>
         </AdminLayout>

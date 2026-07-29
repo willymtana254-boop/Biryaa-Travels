@@ -74,7 +74,7 @@ export default function SiteLayout({ children }) {
                     className={`absolute left-0 top-0 h-full w-72 bg-paper shadow-xl flex flex-col transition-transform duration-300 ${menuOpen ? 'translate-x-0' : '-translate-x-full'}`}
                 >
                     <div className="flex items-center justify-between px-5 h-16 border-b border-ink/10">
-                        <img src="/images/biryaa-logo-tide.png" alt="Biryaa Travels" className="h-7 w-auto" />
+                        <img src="/images/biryaa-logo-tide.png" alt="Biryaa Travels" className="h-24 w-auto" />
                         <button
                             type="button"
                             onClick={() => setMenuOpen(false)}
@@ -140,7 +140,7 @@ export default function SiteLayout({ children }) {
             <footer className="border-t border-ink/10 bg-tide text-paper/90">
                 <div className="max-w-6xl mx-auto px-6 py-12 grid gap-10 sm:grid-cols-2 md:grid-cols-4 text-sm">
                     <div>
-                        <img src="/images/biryaa-logo-white.png" alt="Biryaa Travels" className="h-8 w-auto mb-3" />
+                         <img src="/images/biryaa-logo-tide.png" alt="Biryaa Travels" className="h-24 w-auto" />
                         <p className="text-paper/70 leading-relaxed">
                             Car hire, airport transfers, villas and curated experiences across the Kenyan Coast.
                         </p>

@@ -14,7 +14,7 @@ export default function AdminLayout({ children }) {
             <header className="bg-tide text-paper">
                 <div className="max-w-6xl mx-auto px-6 h-14 flex items-center justify-between text-sm flex-wrap gap-y-2">
                     <Link href="/admin" className="flex items-center gap-3">
-                        <img src="/images/biryaa-logo-white.png" alt="Biryaa Travels" className="h-10 w-auto" />
+                         <img src="/images/biryaa-logo-tide.png" alt="Biryaa Travels" className="h-24 w-auto" />
                         <span className="text-paper/50">·</span>
                         <span className="font-medium text-paper/80">Admin</span>
                     </Link>

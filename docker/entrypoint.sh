@@ -25,6 +25,10 @@ php artisan storage:link || true
 # to run migrations manually instead of on every deploy.
 php artisan migrate --force
 
-echo "Boot checks complete. Starting services..."
+# Seed reference/demo data (locations, vehicles, villas, tours, transfer
+# routes, admin user). Safe to run on every boot — all seeders use
+# updateOrCreate(), so this won't duplicate rows on repeat deploys.
+php artisan db:seed --force
 
+echo "Boot checks complete. Starting services..."
 exec "$@"

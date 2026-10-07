@@ -1,52 +1,71 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { Head, router, Link } from '@inertiajs/react';
 import SiteLayout from '../../Layouts/SiteLayout';
 import { PageHeader, EmptyState } from '../../Components/UI';
 
-function findByName(list, name) {
-    return list.find((item) => item.name.toLowerCase() === name.trim().toLowerCase());
-}
-
-function labelFor(location) {
-    return location.type === 'hub' ? `${location.name}` : location.name;
-}
-
-function TypeaheadField({ id, options, value, onSelect, placeholder }) {
+function TypeaheadField({ options, value, onSelect, placeholder }) {
     const selected = options.find((o) => String(o.id) === String(value));
-    const [text, setText] = useState(selected?.name || '');
+    const [query, setQuery] = useState(selected?.name || '');
+    const [open, setOpen] = useState(false);
+    const containerRef = useRef(null);
 
     useEffect(() => {
         const match = options.find((o) => String(o.id) === String(value));
-        setText(match?.name || '');
+        setQuery(match?.name || '');
     }, [value, options]);
 
-    const commit = (raw) => {
-        const match = findByName(options, raw);
-        onSelect(match ? match.id : '');
-        setText(match ? match.name : '');
+    useEffect(() => {
+        const onClickOutside = (e) => {
+            if (containerRef.current && !containerRef.current.contains(e.target)) {
+                setOpen(false);
+            }
+        };
+        document.addEventListener('mousedown', onClickOutside);
+        document.addEventListener('touchstart', onClickOutside);
+        return () => {
+            document.removeEventListener('mousedown', onClickOutside);
+            document.removeEventListener('touchstart', onClickOutside);
+        };
+    }, []);
+
+    const filtered = query
+        ? options.filter((o) => o.name.toLowerCase().includes(query.toLowerCase()))
+        : options;
+
+    const choose = (option) => {
+        onSelect(option.id);
+        setQuery(option.name);
+        setOpen(false);
     };
 
     return (
-        <div className="flex-1">
+        <div className="flex-1 relative" ref={containerRef}>
             <input
-                list={id}
-                value={text}
+                value={query}
                 placeholder={placeholder}
-                onChange={(e) => setText(e.target.value)}
-                onBlur={(e) => commit(e.target.value)}
-                onKeyDown={(e) => {
-                    if (e.key === 'Enter') {
-                        e.preventDefault();
-                        commit(e.target.value);
-                        e.target.blur();
-                    }
+                onFocus={() => setOpen(true)}
+                onChange={(e) => {
+                    setQuery(e.target.value);
+                    setOpen(true);
+                    if (e.target.value === '') onSelect('');
                 }}
                 className="w-full rounded-lg border border-ink/20 px-4 py-2.5 text-sm bg-white"
                 autoComplete="off"
             />
-            <datalist id={id}>
-                {options.map((o) => <option key={o.id} value={labelFor(o)} />)}
-            </datalist>
+            {open && filtered.length > 0 && (
+                <div className="absolute left-0 right-0 top-full z-30 mt-1 max-h-56 overflow-y-auto rounded-lg border border-ink/10 bg-white shadow-lg">
+                    {filtered.map((o) => (
+                        <button
+                            key={o.id}
+                            type="button"
+                            onClick={() => choose(o)}
+                            className="block w-full text-left px-4 py-2.5 text-sm hover:bg-sand transition-colors"
+                        >
+                            {o.name}
+                        </button>
+                    ))}
+                </div>
+            )}
         </div>
     );
 }
@@ -65,15 +84,8 @@ export default function TransfersIndex({ routes, locations = [], filters }) {
             <Head title="Airport & SGR Transfers" />
 
             <div className="relative">
-                {/* Background video */}
                 <div className="fixed inset-0 z-0 overflow-hidden">
-                    <video
-                        autoPlay
-                        loop
-                        muted
-                        playsInline
-                        className="w-full h-full object-cover"
-                    >
+                    <video autoPlay loop muted playsInline className="w-full h-full object-cover">
                         <source src="/videos/transfers-bg.mp4" type="video/mp4" />
                     </video>
                     <div className="absolute inset-0 bg-tide/70" />
@@ -92,9 +104,8 @@ export default function TransfersIndex({ routes, locations = [], filters }) {
                         </p>
                     )}
 
-                    <div className="mt-8 flex flex-col sm:flex-row items-stretch sm:items-center gap-3 max-w-2xl">
+                    <div className="mt-8 flex flex-col sm:flex-row items-start sm:items-center gap-3 max-w-2xl relative z-20">
                         <TypeaheadField
-                            id="from-options"
                             options={locations}
                             value={filters.from}
                             onSelect={(id) => update('from', id)}
@@ -104,7 +115,7 @@ export default function TransfersIndex({ routes, locations = [], filters }) {
                         <button
                             type="button"
                             onClick={swap}
-                            className="shrink-0 self-center rounded-full border border-ink/20 p-2 text-ink/60 hover:text-tide hover:border-tide transition-colors"
+                            className="shrink-0 self-center rounded-full border border-ink/20 p-2 text-ink/60 hover:text-tide hover:border-tide transition-colors bg-white"
                             aria-label="Swap"
                         >
                             <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
@@ -113,7 +124,6 @@ export default function TransfersIndex({ routes, locations = [], filters }) {
                         </button>
 
                         <TypeaheadField
-                            id="to-options"
                             options={locations}
                             value={filters.to}
                             onSelect={(id) => update('to', id)}
@@ -121,7 +131,7 @@ export default function TransfersIndex({ routes, locations = [], filters }) {
                         />
                     </div>
 
-                    <div className="mt-10 divide-y divide-ink/10 border-y border-ink/10">
+                    <div className="mt-10 divide-y divide-ink/10 border-y border-ink/10 relative z-10">
                         {routes.length === 0 ? (
                             <div className="py-10">
                                 <EmptyState title="No routes match that search" description="Try a different pair, or ask us on WhatsApp for a custom quote." />

@@ -1,5 +1,6 @@
-import { Head, useForm } from '@inertiajs/react';
 import SiteLayout from '../../Layouts/SiteLayout';
+import { useState } from 'react';
+import { Head, useForm } from '@inertiajs/react';
 
 const titleFor = (type, bookable) => {
     if (type === 'transfer') return `${bookable.from_location?.name} → ${bookable.to_location?.name}`;
@@ -9,7 +10,7 @@ const titleFor = (type, bookable) => {
 const needsEndDate = (type) => type === 'vehicle' || type === 'villa';
 const needsGuests = (type) => type === 'villa' || type === 'tour' || type === 'transfer';
 
-export default function Checkout({ type, bookable, pricePerUnit }) {
+export default function Checkout({ type, bookable, pricePerUnit, vehicles = [] }) {
     const { data, setData, post, processing, errors } = useForm({
         type,
         bookable_id: bookable.id,
@@ -22,9 +23,24 @@ export default function Checkout({ type, bookable, pricePerUnit }) {
         notes: '',
     });
 
+    const [preferredVehicle, setPreferredVehicle] = useState('');
+
     const submit = (e) => {
         e.preventDefault();
-        post('/bookings');
+
+        let finalNotes = data.notes;
+        if (type === 'transfer' && preferredVehicle) {
+            const vehicleName = vehicles.find((v) => String(v.id) === String(preferredVehicle))?.name;
+            if (vehicleName) {
+                finalNotes = `Preferred vehicle: ${vehicleName}.${data.notes ? ' ' + data.notes : ''}`;
+            }
+        }
+
+        post('/bookings', {
+            ...data,
+            notes: finalNotes,
+            transform: (formData) => ({ ...formData, notes: finalNotes }),
+        });
     };
 
     return (
@@ -69,6 +85,17 @@ export default function Checkout({ type, bookable, pricePerUnit }) {
                             </Field>
                         )}
                     </div>
+
+                    {type === 'transfer' && vehicles.length > 0 && (
+                        <Field label="Preferred vehicle (optional)">
+                            <select className="input" value={preferredVehicle} onChange={(e) => setPreferredVehicle(e.target.value)}>
+                                <option value="">No preference — any available car</option>
+                                {vehicles.map((v) => (
+                                    <option key={v.id} value={v.id}>{v.name} ({v.category})</option>
+                                ))}
+                            </select>
+                        </Field>
+                    )}
 
                     <Field label="Notes (optional)" error={errors.notes}>
                         <textarea className="input" rows={3} value={data.notes} onChange={(e) => setData('notes', e.target.value)} />

@@ -15,8 +15,8 @@ export default function Confirmation({ booking }) {
                     <a href="https://wa.me/254700000000" className="rounded-full bg-tide text-paper px-6 py-3 font-medium hover:bg-tide-light transition-colors">
                         Message us on WhatsApp
                     </a>
-                    <Link href="/" className="rounded-full border border-ink/20 px-6 py-3 font-medium hover:border-tide hover:text-tide transition-colors">
-                        Back home
+                   <Link href="/home" className="rounded-full border border-ink/20 px-6 py-3 font-medium hover:border-tide hover:text-tide transition-colors">
+                      Back home
                     </Link>
                 </div>
             </div>

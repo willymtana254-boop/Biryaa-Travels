@@ -15,9 +15,6 @@ use Inertia\Response;
 
 class BookingController extends Controller
 {
-    /**
-     * Map the friendly URL segment to its Eloquent model class.
-     */
     protected function resolveType(string $type): string
     {
         return match ($type) {
@@ -45,6 +42,9 @@ class BookingController extends Controller
             'type' => $type,
             'bookable' => $bookable,
             'pricePerUnit' => $bookable->price_per_day ?? $bookable->price_per_night ?? $bookable->price ?? null,
+            'vehicles' => $type === 'transfer'
+                ? Vehicle::where('is_available', true)->orderBy('name')->get(['id', 'name', 'category'])
+                : [],
         ]);
     }
 
@@ -65,35 +65,46 @@ class BookingController extends Controller
         $modelClass = $this->resolveType($data['type']);
         $bookable = $modelClass::findOrFail($data['bookable_id']);
 
+        $end = $data['end_date'] ?? $data['start_date'];
+
+        // Vehicles and villas have a real availability calendar — enforce it.
+        if (in_array($modelClass, [Vehicle::class, Villa::class]) && method_exists($bookable, 'isAvailableBetween')) {
+            if (! $bookable->isAvailableBetween($data['start_date'], $end)) {
+                return back()
+                    ->withErrors(['start_date' => 'Sorry, this is already booked for part of those dates. Please choose different dates.'])
+                    ->withInput();
+            }
+        }
+
         $unitPrice = $bookable->price_per_day ?? $bookable->price_per_night ?? $bookable->price ?? 0;
         $nights = $data['end_date'] ?? null
             ? max(1, \Carbon\Carbon::parse($data['start_date'])->diffInDays($data['end_date']))
             : 1;
 
         $booking = Booking::create([
-    'user_id' => $request->user()?->id,
-    'bookable_type' => $modelClass,
-    'bookable_id' => $bookable->id,
-    'customer_name' => $data['customer_name'],
-    'customer_email' => $data['customer_email'],
-    'customer_phone' => $data['customer_phone'],
-    'start_date' => $data['start_date'],
-    'end_date' => $data['end_date'] ?? $data['start_date'],
-    'guests' => $data['guests'] ?? null,
-    'total_price' => $unitPrice * $nights,
-    'status' => 'pending',
-    'payment_status' => 'unpaid',
-    'notes' => $data['notes'] ?? null,
-]);
+            'user_id' => $request->user()?->id,
+            'bookable_type' => $modelClass,
+            'bookable_id' => $bookable->id,
+            'customer_name' => $data['customer_name'],
+            'customer_email' => $data['customer_email'],
+            'customer_phone' => $data['customer_phone'],
+            'start_date' => $data['start_date'],
+            'end_date' => $end,
+            'guests' => $data['guests'] ?? null,
+            'total_price' => $unitPrice * $nights,
+            'status' => 'pending',
+            'payment_status' => 'unpaid',
+            'notes' => $data['notes'] ?? null,
+        ]);
 
-if ($modelClass === \App\Models\Vehicle::class) {
-    $driver = \App\Models\Driver::where('vehicle_id', $bookable->id)->first();
-    if ($driver) {
-        \App\Models\Notification::forDriverJob($driver, $booking);
-    }
-}
+        if ($modelClass === Vehicle::class) {
+            $driver = \App\Models\Driver::where('vehicle_id', $bookable->id)->first();
+            if ($driver) {
+                \App\Models\Notification::forDriverJob($driver, $booking);
+            }
+        }
 
-return redirect()->route('bookings.confirmation', $booking->reference);
+        return redirect()->route('bookings.confirmation', $booking->reference);
     }
 
     public function confirmation(string $reference): Response

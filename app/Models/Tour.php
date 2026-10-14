@@ -31,4 +31,14 @@ class Tour extends Model
     {
         return $this->morphMany(Booking::class, 'bookable');
     }
+
+    public function reviews(): MorphMany
+    {
+        return $this->morphMany(Review::class, 'reviewable');
+    }
+
+    public function approvedReviews(): MorphMany
+    {
+        return $this->reviews()->where('status', 'approved');
+    }
 }

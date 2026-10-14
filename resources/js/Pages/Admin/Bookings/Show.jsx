@@ -93,6 +93,18 @@ export default function BookingsShow({ booking, bookingType }) {
                             className="inline-block mt-4 text-sm font-medium text-rust hover:underline"
                         
                             Message customer on WhatsApp →
+                            {booking.bookable_type?.endsWith('Tour') && ['confirmed', 'completed'].includes(booking.status) && (
+                       <a
+                            href={`https://wa.me/${(() => { const d = booking.customer_phone.replace(/\D/g, ''); return d.startsWith('0') ? '254' + d.slice(1) : d; })()}?text=${encodeURIComponent(
+                            `Hi ${booking.customer_name.split(' ')[0]}, thanks for joining ${booking.bookable?.name}! We'd love your rating and photos: ${window.location.origin}/experiences/${booking.bookable?.slug}/review?ref=${booking.reference}`
+                            )}`}
+                            target="_blank"
+                            rel="noreferrer"
+                            className="block mt-3 text-sm font-medium text-rust hover:underline"
+                        >
+                           Ask for a review on WhatsApp →
+                        </a>
+                         )}
                         </a>
                     </section>
                 </div>

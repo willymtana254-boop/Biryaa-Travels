@@ -6,6 +6,7 @@ const nav = [
     { href: '/admin/vehicles', label: 'Vehicles' },
     { href: '/admin/drivers', label: 'Drivers' },
     { href: '/admin/notifications', label: 'Notifications' },
+    { href: '/admin/reviews', label: 'Reviews' },
 ];
 
 export default function AdminLayout({ children }) {

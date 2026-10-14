@@ -13,6 +13,9 @@ use App\Http\Controllers\TourController;
 use App\Http\Controllers\TransferController;
 use App\Http\Controllers\VehicleController;
 use App\Http\Controllers\VillaController;
+use App\Http\Controllers\Admin\ReviewController as AdminReviewController;
+use App\Http\Controllers\GuestStoriesController;
+use App\Http\Controllers\ReviewController;
 use Illuminate\Support\Facades\Route;
 
 /*
@@ -35,6 +38,10 @@ Route::get('/villas/{villa:slug}', [VillaController::class, 'show'])->name('vill
 
 Route::get('/experiences', [TourController::class, 'index'])->name('tours.index');
 Route::get('/experiences/{tour:slug}', [TourController::class, 'show'])->name('tours.show');
+
+Route::get('/experiences/{tour:slug}/review', [ReviewController::class, 'create'])->name('reviews.create');
+Route::post('/experiences/{tour:slug}/review', [ReviewController::class, 'store'])->middleware('throttle:10,1')->name('reviews.store');
+Route::get('/guest-stories', GuestStoriesController::class)->name('guest-stories');
 
 Route::get('/book/{type}/{id}', [BookingController::class, 'create'])->name('bookings.create');
 Route::post('/bookings', [BookingController::class, 'store'])->name('bookings.store');
@@ -70,6 +77,13 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'admin'])->group(fun
 
     Route::get('notifications', [AdminNotificationController::class, 'index'])->name('notifications.index');
     Route::patch('notifications/{notification}/mark-sent', [AdminNotificationController::class, 'markSent'])->name('notifications.mark-sent');
-});
+
+    Route::get('reviews', [AdminReviewController::class, 'index'])->name('reviews.index');
+    Route::patch('reviews/{review}/approve', [AdminReviewController::class, 'approve'])->name('reviews.approve');
+    Route::patch('reviews/{review}/reject', [AdminReviewController::class, 'reject'])->name('reviews.reject');
+    Route::patch('reviews/{review}/reply', [AdminReviewController::class, 'reply'])->name('reviews.reply');
+    Route::delete('reviews/{review}', [AdminReviewController::class, 'destroy'])->name('reviews.destroy');   
+
+}); 
 
 require __DIR__.'/auth.php';

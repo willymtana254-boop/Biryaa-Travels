@@ -16,11 +16,19 @@ class TransferRouteSeeder extends Seeder
         $matrix = [
             'Moi International Airport (MBA)' => [
                 'Mombasa' => ['sedan', 25, 15, 25],
+                'Nyali' => ['sedan', 20, 12, 25],
+                'Bamburi' => ['sedan', 22, 14, 30],
+                'Shanzu' => ['sedan', 25, 20, 35],
+                'Mtwapa' => ['sedan', 28, 25, 40],
+                'Kikambala' => ['sedan', 32, 35, 50],
                 'Kilifi' => ['sedan', 40, 60, 75],
+                'Vipingo' => ['sedan', 30, 40, 50],
                 'Diani' => ['sedan', 35, 45, 60],
+                'Tiwi' => ['sedan', 38, 40, 55],
+                'Msambweni' => ['suv', 50, 70, 90],
+                'Shimoni' => ['suv', 65, 95, 120],
                 'Watamu' => ['suv', 55, 105, 120],
                 'Malindi' => ['suv', 60, 120, 135],
-                'Vipingo' => ['sedan', 30, 40, 50],
             ],
             'Malindi Airport (MYD)' => [
                 'Malindi' => ['sedan', 15, 8, 15],
@@ -29,15 +37,23 @@ class TransferRouteSeeder extends Seeder
             ],
             'Ukunda Airport (UUK)' => [
                 'Diani' => ['sedan', 15, 8, 15],
+                'Tiwi' => ['sedan', 18, 15, 25],
+                'Msambweni' => ['sedan', 28, 35, 45],
+                'Shimoni' => ['suv', 45, 60, 80],
                 'Mombasa' => ['mini_van', 45, 45, 60],
             ],
             'Mombasa SGR Terminus' => [
                 'Mombasa' => ['sedan', 20, 20, 30],
+                'Nyali' => ['sedan', 24, 25, 40],
+                'Bamburi' => ['sedan', 26, 28, 40],
+                'Shanzu' => ['sedan', 28, 33, 45],
+                'Mtwapa' => ['sedan', 30, 38, 50],
+                'Kikambala' => ['sedan', 35, 48, 60],
                 'Kilifi' => ['sedan', 42, 65, 80],
+                'Vipingo' => ['sedan', 32, 45, 55],
                 'Diani' => ['sedan', 38, 50, 65],
                 'Watamu' => ['suv', 58, 110, 125],
                 'Malindi' => ['suv', 63, 125, 140],
-                'Vipingo' => ['sedan', 32, 45, 55],
             ],
             'Mariakani SGR Station' => [
                 'Mombasa' => ['sedan', 25, 35, 45],
@@ -61,7 +77,6 @@ class TransferRouteSeeder extends Seeder
                     continue;
                 }
 
-                // Seed both directions so lookups work regardless of which side is "from".
                 foreach ([[$hubId, $townId], [$townId, $hubId]] as [$fromId, $toId]) {
                     TransferRoute::updateOrCreate(
                         [

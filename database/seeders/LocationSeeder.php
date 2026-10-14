@@ -16,6 +16,15 @@ class LocationSeeder extends Seeder
             ['name' => 'Watamu', 'tagline' => 'Marine park & ocean adventures', 'description' => 'Airport transfers, villas and beach resorts, marine park and ocean adventures.'],
             ['name' => 'Malindi', 'tagline' => 'Beaches, culture & ocean excursions', 'description' => 'Airport transfers, hotels and luxury villas, beaches, culture and ocean excursions.'],
             ['name' => 'Vipingo', 'tagline' => 'Golf estates & leisure', 'description' => 'Airport transfers, luxury villas and golf estates, golf, beach and leisure experiences.'],
+            ['name' => 'Nyali', 'tagline' => 'Upmarket beach living near the city', 'description' => 'Apartments and villas minutes from Mombasa island, with beaches, restaurants and nightlife close by.'],
+            ['name' => 'Bamburi', 'tagline' => 'Long beaches & family stays', 'description' => 'Wide sandy beaches, nature trails and family-friendly villas on Mombasa\'s north coast.'],
+            ['name' => 'Shanzu', 'tagline' => 'Quiet coves & coral reefs', 'description' => 'Calmer beaches and reef snorkelling just north of Bamburi.'],
+            ['name' => 'Mtwapa', 'tagline' => 'Creek life & deep-sea fishing', 'description' => 'A lively creek town with marinas, boat trips and relaxed waterfront stays.'],
+            ['name' => 'Kikambala', 'tagline' => 'Coconut groves & open beaches', 'description' => 'Peaceful palm-lined beaches between Mtwapa and Kilifi.'],
+            ['name' => 'Tiwi', 'tagline' => 'Secluded beaches south of Diani', 'description' => 'Quiet coves, coral pools and cottages for travellers who want to switch off.'],
+            ['name' => 'Msambweni', 'tagline' => 'Lagoons & untouched coastline', 'description' => 'Calm lagoons and uncrowded beaches on the south coast.'],
+            ['name' => 'Shimoni', 'tagline' => 'Gateway to Wasini & Kisite marine park', 'description' => 'Dhow trips, dolphin watching and snorkelling at Kisite-Mpunguti, plus quiet sea-view stays.'],
+            ['name' => 'Lamu', 'tagline' => 'Swahili heritage island', 'description' => 'A car-free UNESCO World Heritage island of dhows, donkeys and centuries-old stone houses.'],
         ];
 
         $hubs = [

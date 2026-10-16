@@ -44,7 +44,7 @@ export default function DestinationsIndex({ towns = [] }) {
                                                             className="flex items-center justify-between text-sm rounded-lg px-3 py-2 hover:bg-sand transition-colors"
                                                         >
                                                             <span className="text-ink/80">{v.name}</span>
-                                                            <span className="text-ink/50">from ${Money(v.price_per_night).format()}</span>
+                                                            <span className="text-ink/50">from {Money(v.price_per_night)}</span>
                                                         </Link>
                                                     </li>
                                                 ))}
@@ -67,7 +67,7 @@ export default function DestinationsIndex({ towns = [] }) {
                                                 {town.routes.map((r) => (
                                                     <li key={r.route_id} className="flex items-center justify-between text-sm rounded-lg px-3 py-2">
                                                         <span className="text-ink/80">{r.hub}</span>
-                                                        <span className="text-ink/50">{Money(r.price).format()}</span>
+                                                        <span className="text-ink/50">{Money(r.price)}</span>
                                                     </li>
                                                 ))}
                                             </ul>

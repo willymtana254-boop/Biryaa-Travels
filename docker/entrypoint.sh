@@ -21,9 +21,22 @@ php artisan view:cache
 # Ensure storage symlink exists (for public file uploads, if used).
 php artisan storage:link || true
 
-# Run database migrations. Remove --force guard/comment out if you prefer
-# to run migrations manually instead of on every deploy.
-php artisan migrate --force
+# Run database migrations, retrying while the database becomes reachable.
+# Transient SSL/connection drops are common right after a deploy or when
+# a Render Postgres instance is waking up. A real misconfiguration
+# (bad host, expired database) still fails the deploy after all attempts.
+MAX_ATTEMPTS=15
+SLEEP_SECONDS=5
+attempt=1
+until php artisan migrate --force; do
+    if [ "$attempt" -ge "$MAX_ATTEMPTS" ]; then
+        echo "Database still unreachable after ${MAX_ATTEMPTS} attempts. Check DB_HOST, DB_SSLMODE and that the Postgres instance is active."
+        exit 1
+    fi
+    echo "Migration attempt ${attempt}/${MAX_ATTEMPTS} failed, retrying in ${SLEEP_SECONDS}s..."
+    attempt=$((attempt + 1))
+    sleep "$SLEEP_SECONDS"
+done
 
 # Keep the admin account in sync with Render env vars; refresh the KES rate.
 php artisan admin:ensure || true

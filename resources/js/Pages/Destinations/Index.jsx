@@ -1,3 +1,4 @@
+import { Money } from '../../lib/currency';
 import { Head, Link } from '@inertiajs/react';
 import SiteLayout from '../../Layouts/SiteLayout';
 import { PageHeader, EmptyState } from '../../Components/UI';
@@ -43,7 +44,7 @@ export default function DestinationsIndex({ towns = [] }) {
                                                             className="flex items-center justify-between text-sm rounded-lg px-3 py-2 hover:bg-sand transition-colors"
                                                         >
                                                             <span className="text-ink/80">{v.name}</span>
-                                                            <span className="text-ink/50">${Number(v.price_per_night).toLocaleString()}/night</span>
+                                                            <span className="text-ink/50">from ${Money(v.price_per_night).format()}</span>
                                                         </Link>
                                                     </li>
                                                 ))}
@@ -66,7 +67,7 @@ export default function DestinationsIndex({ towns = [] }) {
                                                 {town.routes.map((r) => (
                                                     <li key={r.route_id} className="flex items-center justify-between text-sm rounded-lg px-3 py-2">
                                                         <span className="text-ink/80">{r.hub}</span>
-                                                        <span className="text-ink/50">from ${Number(r.price).toLocaleString()}</span>
+                                                        <span className="text-ink/50">{Money(r.price).format()}</span>
                                                     </li>
                                                 ))}
                                             </ul>

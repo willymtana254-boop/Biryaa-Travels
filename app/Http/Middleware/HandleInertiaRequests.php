@@ -29,6 +29,9 @@ class HandleInertiaRequests extends \Inertia\Middleware
                 'success' => fn () => $request->session()->get('success'),
                 'error' => fn () => $request->session()->get('error'),
             ],
+            'currency' => ['kes_per_usd' => \App\Support\Currency::kesPerUsd()
+            ],
+
         ];
     }
 }

@@ -1,3 +1,4 @@
+import CurrencyToggle from '../Components/CurrencyToggle';
 import { useState } from 'react';
 import { Link, usePage } from '@inertiajs/react';
 
@@ -47,6 +48,7 @@ export default function SiteLayout({ children }) {
                     </nav>
 
                     <div className="flex items-center gap-4 text-sm">
+                        <CurrencyToggle />
                         {user && (
                        <>
                             <span className="hidden sm:inline text-ink/60">Hi, {user.name.split(' ')[0]}</span>
@@ -102,6 +104,7 @@ export default function SiteLayout({ children }) {
                     </nav>
 
                     <div className="mt-auto px-5 py-6 border-t border-ink/10 space-y-3">
+                    <CurrencyToggle className="w-fit" />
                         {user ? (
                             <Link href="/logout" method="post" as="button" className="block w-full text-center rounded-full border border-ink/20 px-4 py-2.5 font-medium text-ink/80">
                                 Log out

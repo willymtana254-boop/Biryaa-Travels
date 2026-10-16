@@ -39,10 +39,14 @@ class NotificationController extends Controller
 
         $driver = Driver::findOrFail($data['driver_id']);
 
-        $message = "Hi {$driver->name}, you've been assigned a transfer job. "
-            ."Customer: {$booking->customer_name} ({$booking->customer_phone}). "
-            ."Date: {$booking->start_date->toDateString()}. Reference: {$booking->reference}.";
+        $route = $booking->bookable;
+        $leg = $route ? "{$route->fromLocation?->name} → {$route->toLocation?->name}" : 'transfer';
 
+        $message = "Hi {$driver->name}, transfer job: {$leg}. "
+        ."Date: {$booking->start_date->toDateString()}".($booking->pickup_time ? ' at '.substr($booking->pickup_time, 0, 5) : '').'. '
+        .($booking->pickup_address ? "Address: {$booking->pickup_address}. " : '')
+        .($booking->flight_or_train_number ? "Flight/train: {$booking->flight_or_train_number}. " : '')
+        ."Customer: {$booking->customer_name} ({$booking->customer_phone}). Ref: {$booking->reference}.";
         Notification::create([
             'notifiable_type' => Driver::class,
             'notifiable_id' => $driver->id,

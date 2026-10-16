@@ -1,3 +1,4 @@
+import { Money } from '../../lib/currency';
 import { useState, useEffect, useRef } from 'react';
 import { Head, router, Link } from '@inertiajs/react';
 import SiteLayout from '../../Layouts/SiteLayout';
@@ -150,7 +151,7 @@ export default function TransfersIndex({ routes, locations = [], filters }) {
                                         </p>
                                     </div>
                                     <div className="flex items-center gap-4 shrink-0">
-                                        <span className="font-semibold text-ink">${Number(r.price).toLocaleString()}</span>
+                                        <span className="font-semibold text-ink"><Money usd={r.price} /></span>
                                         <Link
                                             href={`/book/transfer/${r.id}`}
                                             className="rounded-full bg-tide text-paper px-5 py-2 text-sm font-medium hover:bg-tide-light transition-colors"

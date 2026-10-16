@@ -3,10 +3,15 @@
 namespace App\Http\Controllers;
 
 use App\Models\Booking;
+use App\Models\Driver;
+use App\Models\Notification;
 use App\Models\Tour;
 use App\Models\TransferRoute;
 use App\Models\Vehicle;
 use App\Models\Villa;
+use App\Support\Currency;
+use App\Support\Pricing;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
@@ -38,6 +43,10 @@ class BookingController extends Controller
 
         $bookable = $modelClass::with($with)->findOrFail($id);
 
+        $extraOptions = collect(config("pricing.extras.{$type}", []))
+            ->map(fn ($def, $key) => ['key' => $key] + $def)
+            ->values();
+
         return Inertia::render('Booking/Checkout', [
             'type' => $type,
             'bookable' => $bookable,
@@ -45,6 +54,37 @@ class BookingController extends Controller
             'vehicles' => $type === 'transfer'
                 ? Vehicle::where('is_available', true)->orderBy('name')->get(['id', 'name', 'category'])
                 : [],
+            'extraOptions' => $extraOptions,
+            'driverFeePerDay' => $type === 'vehicle' ? (float) config('pricing.vehicle.driver_fee_per_day') : 0,
+            'discountTiers' => collect(config("pricing.{$type}.discounts", []))->sortBy('min_days')->values(),
+        ]);
+    }
+
+    /** Live price + availability for the checkout form (read-only, so a plain GET). */
+    public function quote(Request $request): JsonResponse
+    {
+        $data = $request->validate([
+            'type' => ['required', Rule::in(['vehicle', 'villa', 'tour', 'transfer'])],
+            'id' => ['required', 'integer'],
+            'start_date' => ['required', 'date'],
+            'end_date' => ['nullable', 'date', 'after_or_equal:start_date'],
+            'guests' => ['nullable', 'integer', 'min:1', 'max:100'],
+            'with_driver' => ['nullable', 'boolean'],
+            'extras' => ['nullable', 'array'],
+            'extras.*' => ['integer', 'min:0', 'max:10'],
+        ]);
+
+        $bookable = $this->resolveType($data['type'])::findOrFail($data['id']);
+        $quote = Pricing::quote($data['type'], $bookable, $data);
+
+        $available = true;
+        if (in_array($data['type'], ['vehicle', 'villa'], true)) {
+            $available = $bookable->isAvailableBetween($data['start_date'], $data['end_date'] ?? $data['start_date']);
+        }
+
+        return response()->json($quote + [
+            'available' => $available,
+            'rate' => Currency::kesPerUsd(),
         ]);
     }
 
@@ -55,31 +95,41 @@ class BookingController extends Controller
             'bookable_id' => ['required', 'integer'],
             'customer_name' => ['required', 'string', 'max:255'],
             'customer_email' => ['required', 'email', 'max:255'],
-            'customer_phone' => ['required', 'string', 'max:30'],
+            'customer_phone' => ['required', 'string', 'max:30', 'regex:/^\+?[0-9\s\-()]{9,20}$/'],
             'start_date' => ['required', 'date', 'after_or_equal:today'],
             'end_date' => ['nullable', 'date', 'after_or_equal:start_date'],
-            'guests' => ['nullable', 'integer', 'min:1'],
+            'guests' => [Rule::requiredIf($request->input('type') === 'tour'), 'nullable', 'integer', 'min:1', 'max:100'],
+            'pickup_time' => [Rule::requiredIf($request->input('type') === 'transfer'), 'nullable', 'date_format:H:i'],
+            'pickup_address' => ['nullable', 'string', 'max:255'],
+            'flight_or_train_number' => ['nullable', 'string', 'max:30'],
+            'with_driver' => ['nullable', 'boolean'],
+            'extras' => ['nullable', 'array'],
+            'extras.*' => ['integer', 'min:0', 'max:10'],
             'notes' => ['nullable', 'string', 'max:1000'],
+        ], [
+            'customer_phone.regex' => 'Please enter a valid phone number, e.g. 0712 345 678 or +44 7911 123456.',
+            'pickup_time.required' => 'Please tell us the pickup time.',
+            'guests.required' => 'Please tell us how many guests.',
         ]);
 
         $modelClass = $this->resolveType($data['type']);
         $bookable = $modelClass::findOrFail($data['bookable_id']);
-
         $end = $data['end_date'] ?? $data['start_date'];
 
-        // Vehicles and villas have a real availability calendar — enforce it.
-        if (in_array($modelClass, [Vehicle::class, Villa::class]) && method_exists($bookable, 'isAvailableBetween')) {
-            if (! $bookable->isAvailableBetween($data['start_date'], $end)) {
-                return back()
-                    ->withErrors(['start_date' => 'Sorry, this is already booked for part of those dates. Please choose different dates.'])
-                    ->withInput();
-            }
+        if (in_array($modelClass, [Vehicle::class, Villa::class], true) && ! $bookable->isAvailableBetween($data['start_date'], $end)) {
+            return back()
+                ->withErrors(['start_date' => 'Sorry, this is already booked for part of those dates. Please choose different dates.'])
+                ->withInput();
         }
 
-        $unitPrice = $bookable->price_per_day ?? $bookable->price_per_night ?? $bookable->price ?? 0;
-        $nights = $data['end_date'] ?? null
-            ? max(1, \Carbon\Carbon::parse($data['start_date'])->diffInDays($data['end_date']))
-            : 1;
+        // The server always recalculates the price. Nothing the browser sends can change it.
+        $quote = Pricing::quote($data['type'], $bookable, [
+            'start_date' => $data['start_date'],
+            'end_date' => $end,
+            'guests' => $data['guests'] ?? null,
+            'with_driver' => $data['type'] === 'vehicle' && ! empty($data['with_driver']),
+            'extras' => $data['extras'] ?? [],
+        ]);
 
         $booking = Booking::create([
             'user_id' => $request->user()?->id,
@@ -90,17 +140,24 @@ class BookingController extends Controller
             'customer_phone' => $data['customer_phone'],
             'start_date' => $data['start_date'],
             'end_date' => $end,
+            'pickup_time' => $data['pickup_time'] ?? null,
+            'pickup_address' => $data['pickup_address'] ?? null,
+            'flight_or_train_number' => $data['flight_or_train_number'] ?? null,
+            'with_driver' => $data['type'] === 'vehicle' && ! empty($data['with_driver']),
+            'extras' => $quote['extras'] ?: null,
             'guests' => $data['guests'] ?? null,
-            'total_price' => $unitPrice * $nights,
+            'total_price' => $quote['total'],
+            'price_breakdown' => $quote['lines'],
+            'exchange_rate' => Currency::kesPerUsd(),
             'status' => 'pending',
             'payment_status' => 'unpaid',
             'notes' => $data['notes'] ?? null,
         ]);
 
         if ($modelClass === Vehicle::class) {
-            $driver = \App\Models\Driver::where('vehicle_id', $bookable->id)->first();
+            $driver = Driver::where('vehicle_id', $bookable->id)->first();
             if ($driver) {
-                \App\Models\Notification::forDriverJob($driver, $booking);
+                Notification::forDriverJob($driver, $booking);
             }
         }
 
@@ -111,8 +168,6 @@ class BookingController extends Controller
     {
         $booking = Booking::where('reference', $reference)->with('bookable')->firstOrFail();
 
-        return Inertia::render('Booking/Confirmation', [
-            'booking' => $booking,
-        ]);
+        return Inertia::render('Booking/Confirmation', ['booking' => $booking]);
     }
 }

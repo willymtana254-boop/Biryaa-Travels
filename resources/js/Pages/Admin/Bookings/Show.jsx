@@ -55,6 +55,11 @@ export default function BookingsShow({ booking, bookingType }) {
                                 <dt className="text-ink/50">Total price</dt>
                                 <dd className="font-medium">${Number(booking.total_price).toLocaleString()}</dd>
                             </div>
+
+                            {booking.pickup_time && (<div><dt className="text-ink/50">Pickup time</dt><dd className="font-medium">{booking.pickup_time.slice(0, 5)}</dd></div>)}
+                            {booking.flight_or_train_number && (<div><dt className="text-ink/50">Flight / train</dt><dd className="font-medium">{booking.flight_or_train_number}</dd></div>)}
+                            {booking.pickup_address && (<div><dt className="text-ink/50">Address</dt><dd className="font-medium">{booking.pickup_address}</dd></div>)}
+                            {booking.with_driver && (<div><dt className="text-ink/50">Driver</dt><dd className="font-medium">Requested</dd></div>)}
                         </dl>
                         {booking.notes && (
                             <div className="mt-4 pt-4 border-t border-ink/10">

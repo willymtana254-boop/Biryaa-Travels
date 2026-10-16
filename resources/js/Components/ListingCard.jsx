@@ -1,3 +1,4 @@
+import { Money } from '../lib/currency';
 import { Link } from '@inertiajs/react';
 import Stars from './Stars';
 
@@ -44,7 +45,7 @@ export default function ListingCard({ image, eyebrow, title, meta, price, priceL
                 )}
                 {price != null && (
                     <p className="mt-3 text-sm">
-                        <span className="font-semibold text-ink">${Number(price).toLocaleString()}</span>
+                        <span className="font-semibold text-ink"><Money usd={price} /></span>
                         {priceLabel && <span className="text-ink/50"> {priceLabel}</span>}
                     </p>
                 )}

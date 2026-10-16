@@ -2,6 +2,8 @@
 
 namespace App\Models;
 
+use App\Support\Phone;
+use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -29,5 +31,10 @@ class Driver extends Model
     public function scopeAvailable($query)
     {
         return $query->where('is_available', true)->whereNull('vehicle_id');
+    }
+
+    protected function phone(): Attribute
+    {
+        return Attribute::make(set: fn ($value) => Phone::normalize($value));
     }
 }

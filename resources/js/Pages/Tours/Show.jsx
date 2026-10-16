@@ -1,3 +1,4 @@
+import { Money } from '../../lib/currency';
 import { useState, useEffect, useCallback } from 'react';
 import { Head, Link } from '@inertiajs/react';
 import SiteLayout from '../../Layouts/SiteLayout';
@@ -68,7 +69,7 @@ export default function ToursShow({ tour, cover, summary, reviews = [], photos =
 
                     <div className="rounded-2xl border border-ink/10 p-6 h-fit md:sticky md:top-24 bg-white/60">
                         <div className="flex items-baseline gap-2">
-                            <span className="font-display text-3xl text-ink font-semibold">${Number(tour.price).toLocaleString()}</span>
+                            <span className="font-display text-3xl text-ink font-semibold"><Money usd={tour.price} /></span>
                             <span className="text-ink/50">/ person</span>
                         </div>
                         <Link

@@ -43,6 +43,8 @@ Route::get('/experiences/{tour:slug}/review', [ReviewController::class, 'create'
 Route::post('/experiences/{tour:slug}/review', [ReviewController::class, 'store'])->middleware('throttle:10,1')->name('reviews.store');
 Route::get('/guest-stories', GuestStoriesController::class)->name('guest-stories');
 
+Route::get('/booking/quote', [BookingController::class, 'quote'])->middleware('throttle:60,1')->name('bookings.quote');
+
 Route::get('/book/{type}/{id}', [BookingController::class, 'create'])->name('bookings.create');
 Route::post('/bookings', [BookingController::class, 'store'])->name('bookings.store');
 Route::get('/bookings/{reference}/confirmation', [BookingController::class, 'confirmation'])->name('bookings.confirmation');

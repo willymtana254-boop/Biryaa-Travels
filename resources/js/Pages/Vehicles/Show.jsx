@@ -1,3 +1,4 @@
+import { Money } from '../../lib/currency';
 import { Head, Link } from '@inertiajs/react';
 import SiteLayout from '../../Layouts/SiteLayout';
 
@@ -30,7 +31,7 @@ export default function VehiclesShow({ vehicle }) {
                     <p className="mt-6 text-ink/70 leading-relaxed">{vehicle.description || 'A reliable, well-maintained vehicle ready for your coastal journey.'}</p>
 
                     <div className="mt-8 flex items-baseline gap-2">
-                        <span className="font-display text-3xl text-ink font-semibold">${Number(vehicle.price_per_day).toLocaleString()}</span>
+                        <span className="font-display text-3xl text-ink font-semibold"><Money usd={vehicle.price_per_day} /></span>
                         <span className="text-ink/50">/ day</span>
                     </div>
 

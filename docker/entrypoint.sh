@@ -39,6 +39,7 @@ until php artisan migrate --force; do
 done
 
 # Keep the admin account in sync with Render env vars; refresh the KES rate.
+php artisan reference:seed || true
 php artisan admin:ensure || true
 php artisan rates:sync || true
 

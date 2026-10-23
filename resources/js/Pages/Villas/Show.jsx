@@ -31,7 +31,8 @@ export default function VillasShow({ villa, related = [] }) {
         <SiteLayout>
             <Head title={villa.name} />
             <div className="max-w-6xl mx-auto px-6 py-12">
-                <Link href="/villas" className="text-sm text-ink/50 hover:text-tide">← All villas</Link>
+                <img src="/images/Accommodation background.jpg" alt="Accommodation background" className="w-full h-96 object-cover" />
+                <Link href="/villas" className="text-sm text-ink/50 hover:text-tide">← All accommodation</Link>
 
                 {/* Gallery */}
                 <div className="mt-4">
@@ -122,7 +123,7 @@ export default function VillasShow({ villa, related = [] }) {
                             rel="noreferrer"
                             className="mt-3 w-full inline-flex justify-center items-center rounded-full border border-ink/20 px-6 py-3 text-sm font-medium hover:border-tide hover:text-tide transition-colors"
                         >
-                            Ask about this villa
+                            Ask about this stay
                         </a>
                     </div>
                 </div>

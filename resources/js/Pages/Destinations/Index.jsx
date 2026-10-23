@@ -11,7 +11,7 @@ export default function DestinationsIndex({ towns = [] }) {
                 <PageHeader
                     eyebrow="Explore Destinations"
                     title="Every town we serve, and how to get there"
-                    description="Villas available in each destination, plus the airports and SGR stations our drivers connect it to."
+                    description="Accommodation available in each destination, plus the airports and SGR stations our drivers connect it to."
                 />
 
                 <div className="mt-12 space-y-10">
@@ -31,10 +31,10 @@ export default function DestinationsIndex({ towns = [] }) {
                                 <div className="mt-6 grid md:grid-cols-2 gap-8">
                                     <div>
                                         <h3 className="text-sm font-medium text-ink/80 mb-3">
-                                            Villas in {town.name} {town.villas.length > 0 && `(${town.villas.length})`}
+                                            Accommodation in {town.name} {town.villas.length > 0 && `(${town.villas.length})`}
                                         </h3>
                                         {town.villas.length === 0 ? (
-                                            <p className="text-sm text-ink/50">No villas listed yet.</p>
+                                            <p className="text-sm text-ink/50">No accommodation listed yet.</p>
                                         ) : (
                                             <ul className="space-y-2">
                                                 {town.villas.map((v) => (
@@ -54,7 +54,7 @@ export default function DestinationsIndex({ towns = [] }) {
                                             href={`/villas?location=${town.id}`}
                                             className="inline-block mt-3 text-sm font-medium text-rust hover:underline"
                                         >
-                                            View all villas in {town.name} →
+                                            View all accommodation in {town.name} →
                                         </Link>
                                     </div>
 

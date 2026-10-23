@@ -5,7 +5,7 @@ import { Link, usePage } from '@inertiajs/react';
 const nav = [
     { href: '/car-hire', label: 'Car Hire' },
     { href: '/airport-transfers', label: 'Transfers' },
-    { href: '/villas', label: 'Villas' },
+    { href: '/villas', label: 'Accommodation' },
     { href: '/experiences', label: 'Experiences' },
     { href: '/home#services', label: 'About Us & Services' },
     { href: '/destinations', label: 'Explore Destinations' },
@@ -145,7 +145,7 @@ export default function SiteLayout({ children }) {
                     <div>
                          <img src="/images/biryaa-logo-tide.png" alt="Biryaa Travels" className="h-24 w-auto" />
                         <p className="text-paper/70 leading-relaxed">
-                            Car hire, airport transfers, villas and curated experiences across the Kenyan Coast.
+                            Car hire, airport transfers, accommodation and curated experiences across the Kenyan Coast.
                         </p>
                     </div>
                     <div>
@@ -153,7 +153,7 @@ export default function SiteLayout({ children }) {
                         <ul className="space-y-2 text-paper/70">
                             <li><Link href="/car-hire" className="hover:text-paper">Self-Drive Car Hire</Link></li>
                             <li><Link href="/airport-transfers" className="hover:text-paper">Airport Transfers</Link></li>
-                            <li><Link href="/villas" className="hover:text-paper">Villa Concierge</Link></li>
+                            <li><Link href="/villas" className="hover:text-paper">Accommodation</Link></li>
                             <li><Link href="/experiences" className="hover:text-paper">Tours & Experiences</Link></li>
                         </ul>
                     </div>

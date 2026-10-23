@@ -6,7 +6,7 @@ export default function Dashboard({ stats, recentBookings }) {
         { label: 'Pending bookings', value: stats.pendingBookings },
         { label: 'Confirmed bookings', value: stats.confirmedBookings },
         { label: 'Vehicles', value: stats.vehicles },
-        { label: 'Villas', value: stats.villas },
+        { label: 'Accommodation', value: stats.villas },
         { label: 'Tours', value: stats.tours },
         { label: 'Revenue this month', value: `$${Number(stats.revenueThisMonth).toLocaleString()}` },
     ];

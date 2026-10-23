@@ -26,7 +26,7 @@ export default function Home({ locations = [] }) {
                         Book your coastline, stop by stop.
                     </h1>
                     <p className="mt-6 text-lg text-paper/80 max-w-2xl leading-relaxed">
-                        Self-drive cars, airport transfers, beachfront villas and curated experiences —
+                        Self-drive cars, airport transfers, beachfront accommodation and curated experiences —
                         reserved online, confirmed in minutes, across Kilifi, Mombasa, Diani, Watamu, Malindi and Vipingo.
                     </p>
                     <div className="mt-8 flex flex-wrap gap-4">
@@ -34,7 +34,7 @@ export default function Home({ locations = [] }) {
                             Hire a Car
                         </Link>
                         <Link href="/villas" className="rounded-full border border-paper/40 text-paper px-6 py-3 font-medium hover:border-paper hover:bg-paper/10 transition-colors">
-                            Find a Villa
+                            Find Accommodation
                         </Link>
                     </div>
 

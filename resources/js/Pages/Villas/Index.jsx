@@ -22,12 +22,13 @@ export default function VillasIndex({ villas, locations, filters }) {
 
     return (
         <SiteLayout>
-            <Head title="Villa Concierge & Holiday Homes" />
+            <Head title="Accommodation & Holiday Homes" />
+            <img src="/images/Accommodation background.jpg" alt="Accommodation background" className="w-full h-96 object-cover" />
             <div className="max-w-6xl mx-auto px-6 py-16">
                 <PageHeader
-                    eyebrow="Villa Concierge"
+                    eyebrow="Accommodation"
                     title="Stay anywhere along the Kenyan Coast"
-                    description="From Lamu's old stone houses to Diani's beachfront retreats — handpicked villas and holiday homes matched to your destination, group size and budget."
+                    description="From Lamu's old stone houses to Diani's beachfront retreats — handpicked accommodation and holiday homes matched to your destination, group size and budget."
                 />
 
                 <div className="mt-8 flex flex-wrap gap-2">
@@ -71,12 +72,12 @@ export default function VillasIndex({ villas, locations, filters }) {
                 </div>
 
                 <p className="mt-6 text-sm text-ink/50">
-                    {villas.length} {villas.length === 1 ? 'villa' : 'villas'} found
+                    {villas.length} {villas.length === 1 ? 'stay' : 'stays'} found
                 </p>
 
                 <div className="mt-4">
                     {villas.length === 0 ? (
-                        <EmptyState title="No villas match those filters" description="Try widening your budget or group size, or message us for something custom." />
+                        <EmptyState title="No accommodation matches those filters" description="Try widening your budget or group size, or message us for something custom." />
                     ) : (
                         <div className="grid sm:grid-cols-2 md:grid-cols-3 gap-6">
                             {villas.map((v) => (

@@ -34,7 +34,7 @@ class BookingController extends Controller
         'booking' => $booking,
         'bookingType' => match ($booking->bookable_type) {
             \App\Models\Vehicle::class => 'Car Hire',
-            \App\Models\Villa::class => 'Villa',
+            \App\Models\Villa::class => 'Accommodation',
             \App\Models\Tour::class => 'Experience',
             \App\Models\TransferRoute::class => 'Airport / SGR Transfer',
             default => 'Unknown',

@@ -21,9 +21,9 @@ const services = [
         items: ['Executive transport', 'Weddings & events', 'Corporate travel', 'VIP transfers'],
     },
     {
-        title: 'Villa Concierge',
+        title: 'Accommodation',
         href: '/villas',
-        items: ['Beach villas', 'Holiday homes', 'Family stays', 'Luxury retreats'],
+        items: ['Beach stays', 'Holiday homes', 'Family stays', 'Luxury retreats'],
     },
     {
         title: 'Experiences & Excursions',

@@ -34,7 +34,7 @@ class Pricing
             $tiers = config('pricing.vehicle.discounts', []);
         } elseif ($type === 'villa') {
             $base = (float) $bookable->price_per_night * $units;
-            $lines[] = self::line("Villa · {$units} ".self::plural($units, 'night'), $base);
+            $lines[] = self::line("Accommodation · {$units} ".self::plural($units, 'night'), $base);
             $discountable = $base;
             $tiers = config('pricing.villa.discounts', []);
         } elseif ($type === 'tour') {

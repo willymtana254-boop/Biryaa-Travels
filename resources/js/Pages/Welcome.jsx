@@ -18,8 +18,11 @@ export default function Welcome() {
 
                 <div className="relative max-w-6xl mx-auto px-6 w-full">
                     <div className="max-w-md">
-                        <img src="/images/biryaa-logo-tide.png" alt="Biryaa Travels" className="h-40 w-auto" />
-
+                       <img
+                           src="/images/biryaa-logo-white.png"
+                            alt="Biryaa Travels"
+                            className="h-40 md:h-56 w-auto drop-shadow-2xl"
+                        />
                         <p className="text-rust font-medium text-sm tracking-wide uppercase mb-4">Kenyan Coast, one booking at a time</p>
                         <h1 className="font-display text-4xl md:text-5xl text-paper font-semibold leading-[1.1]">
                             Travel that knows this coast.

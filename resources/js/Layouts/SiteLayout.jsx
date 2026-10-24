@@ -11,6 +11,8 @@ const nav = [
     { href: '/destinations', label: 'Explore Destinations' },
 ];
 
+const LOGO = '/images/biryaa-logo.png';
+
 export default function SiteLayout({ children }) {
     const { props } = usePage();
     const user = props.auth?.user;
@@ -19,8 +21,8 @@ export default function SiteLayout({ children }) {
 
     return (
         <div className="min-h-screen flex flex-col bg-paper text-ink">
-            <header className="border-b border-ink/10 bg-paper/95 backdrop-blur sticky top-0 z-40">
-                <div className="max-w-6xl mx-auto px-6 h-16 flex items-center justify-between">
+            <header className="bg-paper/95 backdrop-blur sticky top-0 z-40">
+                <div className="max-w-6xl mx-auto px-6 h-20 md:h-24 flex items-center justify-between">
                     <div className="flex items-center gap-3">
                         <button
                             type="button"
@@ -35,7 +37,7 @@ export default function SiteLayout({ children }) {
                             </svg>
                         </button>
                         <Link href="/home" className="flex items-center">
-                            <img src="/images/biryaa-logo-tide.png" alt="Biryaa Travels" className="h-24 w-auto" />
+                           <img src={LOGO} alt="Biryaa Travels" className="h-16 md:h-20 w-auto" />
                         </Link>
                     </div>
 
@@ -50,18 +52,20 @@ export default function SiteLayout({ children }) {
                     <div className="flex items-center gap-4 text-sm">
                         <CurrencyToggle />
                         {user && (
-                       <>
-                            <span className="hidden sm:inline text-ink/60">Hi, {user.name.split(' ')[0]}</span>
-                         <Link href="/account/bookings" className="text-ink/70 hover:text-tide">
-                               My Bookings
-                          </Link>
-                            <Link href="/logout" method="post" as="button" className="text-ink/70 hover:text-rust">
-                                   Log out
-                             </Link>
-                       </>
-                     )}
+                            <>
+                                <span className="hidden sm:inline text-ink/60">Hi, {user.name.split(' ')[0]}</span>
+                                <Link href="/account/bookings" className="text-ink/70 hover:text-tide">
+                                    My Bookings
+                                </Link>
+                                <Link href="/logout" method="post" as="button" className="text-ink/70 hover:text-rust">
+                                    Log out
+                                </Link>
+                            </>
+                        )}
                     </div>
                 </div>
+                {/* Brand strip: teal and sun yellow */}
+                <div className="h-1 bg-gradient-to-r from-[#14B1C5] via-[#14B1C5] to-[#FCCA14]" />
             </header>
 
             {/* Mobile drawer */}
@@ -75,8 +79,8 @@ export default function SiteLayout({ children }) {
                 <div
                     className={`absolute left-0 top-0 h-full w-72 bg-paper shadow-xl flex flex-col transition-transform duration-300 ${menuOpen ? 'translate-x-0' : '-translate-x-full'}`}
                 >
-                    <div className="flex items-center justify-between px-5 h-16 border-b border-ink/10">
-                        <img src="/images/biryaa-logo-tide.png" alt="Biryaa Travels" className="h-24 w-auto" />
+                    <div className="flex items-center justify-between px-5 h-20 border-b border-ink/10">
+                       <img src={LOGO} alt="Biryaa Travels" className="h-14 w-auto" />
                         <button
                             type="button"
                             onClick={() => setMenuOpen(false)}
@@ -104,7 +108,7 @@ export default function SiteLayout({ children }) {
                     </nav>
 
                     <div className="mt-auto px-5 py-6 border-t border-ink/10 space-y-3">
-                    <CurrencyToggle className="w-fit" />
+                        <CurrencyToggle className="w-fit" />
                         {user ? (
                             <Link href="/logout" method="post" as="button" className="block w-full text-center rounded-full border border-ink/20 px-4 py-2.5 font-medium text-ink/80">
                                 Log out
@@ -140,13 +144,19 @@ export default function SiteLayout({ children }) {
                 </svg>
             </a>
 
-            <footer className="border-t border-ink/10 bg-tide text-paper/90">
+            <footer className="bg-tide text-paper/90">
+                <div className="h-1 bg-gradient-to-r from-[#14B1C5] via-[#14B1C5] to-[#FCCA14]" />
                 <div className="max-w-6xl mx-auto px-6 py-12 grid gap-10 sm:grid-cols-2 md:grid-cols-4 text-sm">
                     <div>
-                         <img src="/images/biryaa-logo-tide.png" alt="Biryaa Travels" className="h-24 w-auto" />
+                        <img
+                          src="/images/biryaa-logo-white.png"
+                          alt="Biryaa Travels"
+                          className="h-28 w-auto mb-4 -ml-3"
+                        />
                         <p className="text-paper/70 leading-relaxed">
                             Car hire, airport transfers, accommodation and curated experiences across the Kenyan Coast.
                         </p>
+                        <p className="mt-3 italic text-[#FCCA14]">Twende Tuzuru</p>
                     </div>
                     <div>
                         <p className="font-medium mb-3 text-paper">Services</p>
@@ -155,6 +165,7 @@ export default function SiteLayout({ children }) {
                             <li><Link href="/airport-transfers" className="hover:text-paper">Airport Transfers</Link></li>
                             <li><Link href="/villas" className="hover:text-paper">Accommodation</Link></li>
                             <li><Link href="/experiences" className="hover:text-paper">Tours & Experiences</Link></li>
+                            <li><Link href="/destinations" className="hover:text-paper">Destinations</Link></li>
                         </ul>
                     </div>
                     <div>
@@ -170,13 +181,22 @@ export default function SiteLayout({ children }) {
                     </div>
                     <div>
                         <p className="font-medium mb-3 text-paper">Talk to us</p>
-                        <a href="https://wa.me/254728769798" className="inline-flex items-center rounded-full bg-rust px-4 py-2 font-medium text-paper hover:bg-rust-light transition-colors">
+                        <ul className="space-y-2 text-paper/80 mb-4">
+                            <li><a href="tel:+254728769798" className="hover:text-[#FCCA14]">+254 728 769 798</a></li>
+                            <li><a href="tel:+254750192910" className="hover:text-[#FCCA14]">+254 750 192 910</a></li>
+                            <li><a href="mailto:info@biryaatravelsltd.co.ke" className="hover:text-[#FCCA14] break-all">info@biryaatravelsltd.co.ke</a></li>
+                            <li>P.O. Box 3339-80100, Mombasa</li>
+                        </ul>
+                        <a
+                            href="https://wa.me/254728769798"
+                            className="inline-flex items-center rounded-full bg-[#FCCA14] px-4 py-2 font-medium text-ink hover:brightness-95 transition"
+                        >
                             Plan on WhatsApp
                         </a>
                     </div>
                 </div>
                 <div className="border-t border-paper/10 py-4 text-center text-xs text-paper/50">
-                    © {new Date().getFullYear()} Biryaa Travels. All rights reserved.
+                    © {new Date().getFullYear()} Biryaa Travels Ltd. All rights reserved.
                 </div>
             </footer>
         </div>

@@ -46,7 +46,7 @@ export function useMoney() {
     return { currency, rate, fmt, setCurrency };
 }
 
-export function Money({ usd }) {
+export function Money({ amount, usd }) {
     const { fmt } = useMoney();
-    return fmt(usd);
+    return fmt(amount ?? usd);
 }

@@ -2,7 +2,6 @@ import { Money } from '../../lib/currency';
 import { useState, useEffect, useRef } from 'react';
 import { Head, router, Link } from '@inertiajs/react';
 import SiteLayout from '../../Layouts/SiteLayout';
-import { PageHeader, EmptyState } from '../../Components/UI';
 
 function TypeaheadField({ options, value, onSelect, placeholder }) {
     const selected = options.find((o) => String(o.id) === String(value));
@@ -40,7 +39,7 @@ function TypeaheadField({ options, value, onSelect, placeholder }) {
     };
 
     return (
-        <div className="flex-1 relative" ref={containerRef}>
+        <div className="flex-1 relative w-full" ref={containerRef}>
             <input
                 value={query}
                 placeholder={placeholder}
@@ -72,6 +71,9 @@ function TypeaheadField({ options, value, onSelect, placeholder }) {
 }
 
 export default function TransfersIndex({ routes, locations = [], filters }) {
+    const shadow = { textShadow: '0 2px 10px rgba(0,0,0,0.8)' };
+    const bothChosen = Boolean(filters.from && filters.to);
+
     const update = (key, id) => {
         router.get('/airport-transfers', { ...filters, [key]: id || undefined }, { preserveState: true, replace: true });
     };
@@ -85,26 +87,32 @@ export default function TransfersIndex({ routes, locations = [], filters }) {
             <Head title="Airport & SGR Transfers" />
 
             <div className="relative">
+                {/* Background video, original colours */}
                 <div className="fixed inset-0 z-0 overflow-hidden">
                     <video autoPlay loop muted playsInline className="w-full h-full object-cover">
                         <source src="/videos/transfers-bg.mp4" type="video/mp4" />
                     </video>
-                    <div className="absolute inset-0 bg-tide/70" />
                 </div>
 
+                {/* Content sits above the video */}
                 <div className="max-w-5xl mx-auto px-6 py-16 relative z-10">
-                    <PageHeader
-                        eyebrow="Airport & SGR Transfers"
-                        title="A driver waiting the moment you arrive"
-                        description="Fixed, distance-based pricing between airports, SGR stations and any town on the Kenyan Coast — pick either point in either field."
-                    />
+                    <div className="text-white" style={shadow}>
+                        <p className="text-xs uppercase tracking-[0.25em] text-white/90 mb-3">Airport & SGR Transfers</p>
+                        <h1 className="font-display text-4xl md:text-5xl font-semibold">
+                            A driver waiting the moment you arrive
+                        </h1>
+                        <p className="mt-4 max-w-2xl text-white/90">
+                            Fixed, distance-based pricing between airports, SGR stations and any town on the Kenyan Coast — pick either point in either field.
+                        </p>
+                    </div>
 
                     {locations.length === 0 && (
-                        <p className="mt-6 text-sm text-rust bg-rust/10 rounded-lg px-4 py-3">
-                            No locations found in the database. Run <code className="font-mono">php artisan migrate:fresh --seed</code> and refresh this page.
+                        <p className="mt-6 text-sm text-rust bg-white rounded-lg px-4 py-3">
+                            No locations found in the database. Run <code className="font-mono">php artisan reference:seed</code> and refresh this page.
                         </p>
                     )}
 
+                    {/* From / swap / To */}
                     <div className="mt-8 flex flex-col sm:flex-row items-start sm:items-center gap-3 max-w-2xl relative z-20">
                         <TypeaheadField
                             options={locations}
@@ -132,14 +140,28 @@ export default function TransfersIndex({ routes, locations = [], filters }) {
                         />
                     </div>
 
-                    <div className="mt-10 divide-y divide-ink/10 border-y border-ink/10 relative z-10">
-                        {routes.length === 0 ? (
-                            <div className="py-10">
-                                <EmptyState title="No routes match that search" description="Try a different pair, or ask us on WhatsApp for a custom quote." />
-                            </div>
-                        ) : (
-                            routes.map((r) => (
-                                <div key={r.id} className="flex items-center justify-between py-5 gap-4">
+                    {/* Price appears only once both points are chosen */}
+                    {!bothChosen ? (
+                        <p className="mt-8 text-white max-w-2xl" style={shadow}>
+                            Choose where you are starting and where you are going. Your price appears here instantly.
+                        </p>
+                    ) : routes.length === 0 ? (
+                        <div className="mt-8 max-w-2xl rounded-2xl bg-white/95 p-6 relative z-10">
+                            <p className="font-display text-lg text-tide font-semibold">No fixed price for this trip yet</p>
+                            <p className="text-sm text-ink/70 mt-2">
+                                Message us and we will confirm a price quickly.
+                            </p>
+                            <a
+                                href="https://wa.me/254728769798?text=Hi%20Biryaa%20Travels%2C%20I%20need%20a%20transfer%20quote"
+                                className="inline-block mt-4 rounded-full bg-tide text-paper px-5 py-2 text-sm font-medium hover:bg-tide-light transition-colors"
+                            >
+                                Get a quote on WhatsApp
+                            </a>
+                        </div>
+                    ) : (
+                        <div className="mt-8 max-w-2xl space-y-3 relative z-10">
+                            {routes.map((r) => (
+                                <div key={r.id} className="rounded-2xl bg-white/95 p-6 flex items-center justify-between gap-4">
                                     <div>
                                         <p className="font-display text-lg text-tide font-semibold">
                                             {r.from_location.name} → {r.to_location.name}
@@ -151,18 +173,18 @@ export default function TransfersIndex({ routes, locations = [], filters }) {
                                         </p>
                                     </div>
                                     <div className="flex items-center gap-4 shrink-0">
-                                        <span className="font-semibold text-ink"><Money usd={r.price} /></span>
+                                        <span className="text-xl font-semibold text-ink"><Money usd={r.price} /></span>
                                         <Link
                                             href={`/book/transfer/${r.id}`}
-                                            className="rounded-full bg-tide text-paper px-5 py-2 text-sm font-medium hover:bg-tide-light transition-colors"
+                                            className="rounded-full bg-tide text-paper px-6 py-2.5 text-sm font-medium hover:bg-tide-light transition-colors"
                                         >
                                             Book
                                         </Link>
                                     </div>
                                 </div>
-                            ))
-                        )}
-                    </div>
+                            ))}
+                        </div>
+                    )}
                 </div>
             </div>
         </SiteLayout>

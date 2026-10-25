@@ -1,0 +1,53 @@
+[
+    {
+        "name": "Toyota RAV4",
+        "slug": "toyota-rav4",
+        "category": "All",
+        "seats": 5,
+        "transmission": "automatic",
+        "price_per_day": "75.00",
+        "description": "Fully insured Toyota RAV4 in excellent condition, ready for self-drive hire across the Kenyan Coast.",
+        "images": [
+            "/images/vehicles/rav4-suv.jpg"
+        ],
+        "is_available": true,
+        "availability": {
+            "status": "available",
+            "available_from": null
+        }
+    },
+    {
+        "name": "Toyota Noah",
+        "slug": "toyota-noah",
+        "category": "All",
+        "seats": 8,
+        "transmission": "automatic",
+        "price_per_day": "90.00",
+        "description": "Fully insured Toyota Noah in excellent condition, ready for self-drive hire across the Kenyan Coast.",
+        "images": [
+            "/images/vehicles/noah-van.jpg"
+        ],
+        "is_available": true,
+        "availability": {
+            "status": "available",
+            "available_from": null
+        }
+    },
+    {
+        "name": "Toyota fielder",
+        "slug": "toyota-fielder",
+        "category": "All",
+        "seats": 5,
+        "transmission": "automatic",
+        "price_per_day": "60.00",
+        "description": "Fully insured Toyota fielder in excellent condition, ready for self-drive hire across the Kenyan Coast.",
+        "images": [
+            "/images/vehicles/fielder-sedan.jpg"
+        ],
+        "is_available": true,
+        "availability": {
+            "status": "available",
+            "available_from": null
+        }
+    }
+]

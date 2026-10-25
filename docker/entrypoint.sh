@@ -40,6 +40,9 @@ done
 
 # Keep the admin account in sync with Render env vars; refresh the KES rate.
 php artisan reference:seed || true
+if [ "$SYNC_VEHICLES" = "true" ]; then
+    php artisan vehicles:import --prune || true
+fi
 php artisan admin:ensure || true
 php artisan rates:sync || true
 

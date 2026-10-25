@@ -16,7 +16,9 @@ class VehicleController extends Controller
             ->where('is_available', true)
             ->when($request->category, fn ($q, $category) => $q->where('category', $category))
             ->orderBy('price_per_day')
-            ->get();
+            ->get()
+            ->filter(fn (Vehicle $vehicle) => ! empty($vehicle->images))
+            ->values();
 
         return Inertia::render('Vehicles/Index', [
             'vehicles' => $vehicles,

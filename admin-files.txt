@@ -1,0 +1,735 @@
+
+===== routes\web.php =====
+
+<?php
+
+use App\Http\Controllers\Account\BookingController as AccountBookingController;
+use App\Http\Controllers\Admin\BookingController as AdminBookingController;
+use App\Http\Controllers\Admin\DashboardController as AdminDashboardController;
+use App\Http\Controllers\Admin\DriverController;
+use App\Http\Controllers\Admin\NotificationController as AdminNotificationController;
+use App\Http\Controllers\Admin\VehicleController as AdminVehicleController;
+use App\Http\Controllers\BookingController;
+use App\Http\Controllers\DestinationController;
+use App\Http\Controllers\HomeController;
+use App\Http\Controllers\TourController;
+use App\Http\Controllers\TransferController;
+use App\Http\Controllers\VehicleController;
+use App\Http\Controllers\VillaController;
+use App\Http\Controllers\Admin\ReviewController as AdminReviewController;
+use App\Http\Controllers\GuestStoriesController;
+use App\Http\Controllers\ReviewController;
+use Illuminate\Support\Facades\Route;
+
+/*
+|--------------------------------------------------------------------------
+| Public booking site
+|--------------------------------------------------------------------------
+*/
+Route::get('/', \App\Http\Controllers\WelcomeController::class)->name('welcome');
+Route::get('/home', HomeController::class)->name('home');
+
+Route::get('/destinations', [DestinationController::class, 'index'])->name('destinations.index');
+
+Route::get('/car-hire', [VehicleController::class, 'index'])->name('vehicles.index');
+Route::get('/car-hire/{vehicle}', [VehicleController::class, 'show'])->name('vehicles.show');
+
+Route::get('/airport-transfers', [TransferController::class, 'index'])->name('transfers.index');
+
+Route::get('/villas', [VillaController::class, 'index'])->name('villas.index');
+Route::get('/villas/{villa:slug}', [VillaController::class, 'show'])->name('villas.show');
+
+Route::get('/experiences', [TourController::class, 'index'])->name('tours.index');
+Route::get('/experiences/{tour:slug}', [TourController::class, 'show'])->name('tours.show');
+
+Route::get('/experiences/{tour:slug}/review', [ReviewController::class, 'create'])->name('reviews.create');
+Route::post('/experiences/{tour:slug}/review', [ReviewController::class, 'store'])->middleware('throttle:10,1')->name('reviews.store');
+Route::get('/guest-stories', GuestStoriesController::class)->name('guest-stories');
+
+Route::get('/booking/quote', [BookingController::class, 'quote'])->middleware('throttle:60,1')->name('bookings.quote');
+
+Route::get('/book/{type}/{id}', [BookingController::class, 'create'])->name('bookings.create');
+Route::post('/bookings', [BookingController::class, 'store'])->name('bookings.store');
+Route::get('/bookings/{reference}/confirmation', [BookingController::class, 'confirmation'])->name('bookings.confirmation');
+
+Route::middleware('auth')->prefix('account')->name('account.')->group(function () {
+    Route::get('/bookings', [AccountBookingController::class, 'index'])->name('bookings');
+});
+
+/*
+|--------------------------------------------------------------------------
+| Admin back-office
+|--------------------------------------------------------------------------
+*/
+Route::prefix('admin')->name('admin.')->middleware(['auth', 'admin'])->group(function () {
+    Route::get('/', AdminDashboardController::class)->name('dashboard');
+
+    Route::get('bookings', [AdminBookingController::class, 'index'])->name('bookings.index');
+    Route::get('bookings/{booking}', [AdminBookingController::class, 'show'])->name('bookings.show');
+    Route::patch('bookings/{booking}', [AdminBookingController::class, 'update'])->name('bookings.update');
+    Route::post('bookings/{booking}/assign-transfer-driver', [AdminNotificationController::class, 'assignTransferDriver'])->name('bookings.assign-transfer-driver');
+
+    Route::get('vehicles', [AdminVehicleController::class, 'index'])->name('vehicles.index');
+    Route::get('vehicles/create', [AdminVehicleController::class, 'create'])->name('vehicles.create');
+    Route::post('vehicles', [AdminVehicleController::class, 'store'])->name('vehicles.store');
+    Route::post('vehicles/{vehicle}/assign-driver', [AdminVehicleController::class, 'assignDriver'])->name('vehicles.assign-driver');
+    Route::post('vehicles/{vehicle}/deassign-driver', [AdminVehicleController::class, 'deassignDriver'])->name('vehicles.deassign-driver');
+
+    Route::get('drivers', [DriverController::class, 'index'])->name('drivers.index');
+    Route::get('drivers/create', [DriverController::class, 'create'])->name('drivers.create');
+    Route::post('drivers', [DriverController::class, 'store'])->name('drivers.store');
+    Route::patch('drivers/{driver}/assign', [DriverController::class, 'assign'])->name('drivers.assign');
+
+    Route::get('notifications', [AdminNotificationController::class, 'index'])->name('notifications.index');
+    Route::patch('notifications/{notification}/mark-sent', [AdminNotificationController::class, 'markSent'])->name('notifications.mark-sent');
+
+    Route::get('reviews', [AdminReviewController::class, 'index'])->name('reviews.index');
+    Route::patch('reviews/{review}/approve', [AdminReviewController::class, 'approve'])->name('reviews.approve');
+    Route::patch('reviews/{review}/reject', [AdminReviewController::class, 'reject'])->name('reviews.reject');
+    Route::patch('reviews/{review}/reply', [AdminReviewController::class, 'reply'])->name('reviews.reply');
+    Route::delete('reviews/{review}', [AdminReviewController::class, 'destroy'])->name('reviews.destroy');   
+
+}); 
+
+require __DIR__.'/auth.php';
+
+===== app\Http\Controllers\Admin\BookingController.php =====
+
+<?php
+
+namespace App\Http\Controllers\Admin;
+
+use App\Http\Controllers\Controller;
+use App\Models\Booking;
+use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
+use Inertia\Inertia;
+use Inertia\Response;
+
+class BookingController extends Controller
+{
+    public function index(Request $request): Response
+    {
+        $bookings = Booking::with('bookable')
+            ->when($request->status, fn ($q, $status) => $q->where('status', $status))
+            ->latest()
+            ->paginate(20)
+            ->withQueryString();
+
+        return Inertia::render('Admin/Bookings/Index', [
+            'bookings' => $bookings,
+            'filters' => $request->only('status'),
+        ]);
+    }
+
+    public function show(Booking $booking): Response
+    {
+      $booking->load(['bookable', 'user']);
+
+      return Inertia::render('Admin/Bookings/Show', [
+        'booking' => $booking,
+        'bookingType' => match ($booking->bookable_type) {
+            \App\Models\Vehicle::class => 'Car Hire',
+            \App\Models\Villa::class => 'Accommodation',
+            \App\Models\Tour::class => 'Experience',
+            \App\Models\TransferRoute::class => 'Airport / SGR Transfer',
+            default => 'Unknown',
+        },
+      ]);
+    }
+
+    public function update(Request $request, Booking $booking): RedirectResponse
+    {
+        $data = $request->validate([
+            'status' => ['sometimes', Rule::in(['pending', 'confirmed', 'cancelled', 'completed'])],
+            'payment_status' => ['sometimes', Rule::in(['unpaid', 'paid', 'refunded'])],
+        ]);
+
+        $booking->update($data);
+
+        return back()->with('success', 'Booking updated.');
+    }
+}
+
+===== resources\js\Pages\Admin\Dashboard.jsx =====
+
+import { Head, Link } from '@inertiajs/react';
+import AdminLayout from '../../Layouts/AdminLayout';
+
+export default function Dashboard({ stats, recentBookings }) {
+    const cards = [
+        { label: 'Pending bookings', value: stats.pendingBookings },
+        { label: 'Confirmed bookings', value: stats.confirmedBookings },
+        { label: 'Vehicles', value: stats.vehicles },
+        { label: 'Accommodation', value: stats.villas },
+        { label: 'Tours', value: stats.tours },
+        { label: 'Revenue this month', value: `$${Number(stats.revenueThisMonth).toLocaleString()}` },
+    ];
+
+    return (
+        <AdminLayout>
+            <Head title="Admin Dashboard" />
+            <h1 className="font-display text-2xl text-tide font-semibold mb-6">Dashboard</h1>
+
+            <div className="grid sm:grid-cols-3 md:grid-cols-6 gap-4 mb-10">
+                {cards.map((c) => (
+                    <div key={c.label} className="bg-white rounded-xl border border-ink/10 p-4">
+                        <p className="text-2xl font-display font-semibold text-tide">{c.value}</p>
+                        <p className="text-xs text-ink/60 mt-1">{c.label}</p>
+                    </div>
+                ))}
+            </div>
+
+            <h2 className="font-display text-xl text-tide font-semibold mb-4">Recent bookings</h2>
+            <div className="bg-white rounded-xl border border-ink/10 divide-y divide-ink/10">
+                {recentBookings.map((b) => (
+                    <div key={b.id} className="flex items-center justify-between px-5 py-3 text-sm">
+                        <div>
+                            <p className="font-medium">{b.customer_name}</p>
+                            <p className="text-ink/50">{b.reference}</p>
+                        </div>
+                        <span className="px-2.5 py-1 rounded-full bg-sand text-xs font-medium">{b.status}</span>
+                        <span className="font-medium">${Number(b.total_price).toLocaleString()}</span>
+                    </div>
+                ))}
+            </div>
+            <Link href="/admin/bookings" className="inline-block mt-6 text-sm font-medium text-rust hover:underline">
+                View all bookings →
+            </Link>
+        </AdminLayout>
+    );
+}
+
+===== resources\js\Pages\Admin\Bookings\Index.jsx =====
+
+import { Head, Link, router } from '@inertiajs/react';
+import AdminLayout from '../../../Layouts/AdminLayout';
+
+const statuses = ['pending', 'confirmed', 'cancelled', 'completed'];
+const paymentStatuses = ['unpaid', 'paid', 'refunded'];
+
+export default function BookingsIndex({ bookings }) {
+    const updateStatus = (booking, field, value) => {
+        router.patch(`/admin/bookings/${booking.id}`, { [field]: value }, { preserveScroll: true });
+    };
+
+    return (
+        <AdminLayout>
+            <Head title="Bookings" />
+            <h1 className="font-display text-2xl text-tide font-semibold mb-6">Bookings</h1>
+
+            <div className="bg-white rounded-xl border border-ink/10 overflow-x-auto">
+                <table className="w-full text-sm">
+                    <thead>
+                        <tr className="text-left text-ink/50 border-b border-ink/10">
+                            <th className="px-5 py-3 font-medium">Reference</th>
+                            <th className="px-5 py-3 font-medium">Customer</th>
+                            <th className="px-5 py-3 font-medium">Dates</th>
+                            <th className="px-5 py-3 font-medium">Total</th>
+                            <th className="px-5 py-3 font-medium">Status</th>
+                            <th className="px-5 py-3 font-medium">Payment</th>
+                        </tr>
+                    </thead>
+                    <tbody className="divide-y divide-ink/10">
+                        {bookings.data.map((b) => (
+                            <tr key={b.id}>
+                                <td className="px-5 py-3 font-mono text-xs">
+                                    <Link href={`/admin/bookings/${b.id}`} className="text-tide hover:underline">
+                                      {b.reference}
+                                   </Link>
+                               </td>
+                                <td className="px-5 py-3">
+                                    <p className="font-medium">{b.customer_name}</p>
+                                    <p className="text-ink/50 text-xs">{b.customer_email}</p>
+                                </td>
+                                <td className="px-5 py-3 text-ink/70">{b.start_date} → {b.end_date}</td>
+                                <td className="px-5 py-3 font-medium">${Number(b.total_price).toLocaleString()}</td>
+                                <td className="px-5 py-3">
+                                    <select
+                                        className="rounded-lg border border-ink/20 px-2 py-1 text-xs"
+                                        value={b.status}
+                                        onChange={(e) => updateStatus(b, 'status', e.target.value)}
+                                    >
+                                        {statuses.map((s) => <option key={s} value={s}>{s}</option>)}
+                                    </select>
+                                </td>
+                                <td className="px-5 py-3">
+                                    <select
+                                        className="rounded-lg border border-ink/20 px-2 py-1 text-xs"
+                                        value={b.payment_status}
+                                        onChange={(e) => updateStatus(b, 'payment_status', e.target.value)}
+                                    >
+                                        {paymentStatuses.map((s) => <option key={s} value={s}>{s}</option>)}
+                                    </select>
+                                </td>
+                            </tr>
+                        ))}
+                    </tbody>
+                </table>
+            </div>
+        </AdminLayout>
+    );
+}
+
+===== resources\js\Pages\Admin\Bookings\Show.jsx =====
+
+import { Head, Link, router } from '@inertiajs/react';
+import AdminLayout from '../../../Layouts/AdminLayout';
+
+const statuses = ['pending', 'confirmed', 'cancelled', 'completed'];
+const paymentStatuses = ['unpaid', 'paid', 'refunded'];
+
+function bookableLabel(booking) {
+    const b = booking.bookable;
+    if (!b) return 'Unknown';
+
+    if (booking.bookable_type.endsWith('TransferRoute')) {
+        return `${b.from_location?.name ?? '?'} → ${b.to_location?.name ?? '?'}`;
+    }
+
+    return b.name ?? `#${b.id}`;
+}
+
+export default function BookingsShow({ booking, bookingType }) {
+    const updateStatus = (field, value) => {
+        router.patch(`/admin/bookings/${booking.id}`, { [field]: value }, { preserveScroll: true });
+    };
+
+    return (
+        <AdminLayout>
+            <Head title={`Booking ${booking.reference}`} />
+
+            <Link href="/admin/bookings" className="text-sm text-ink/50 hover:text-tide">← Back to bookings</Link>
+
+            <div className="mt-4 flex items-baseline justify-between flex-wrap gap-2">
+                <h1 className="font-display text-2xl text-tide font-semibold">{booking.reference}</h1>
+                <span className="px-3 py-1 rounded-full bg-sand text-sm font-medium">{bookingType}</span>
+            </div>
+
+            <div className="mt-8 grid md:grid-cols-3 gap-6">
+                <div className="md:col-span-2 space-y-6">
+                    <section className="bg-white rounded-xl border border-ink/10 p-6">
+                        <h2 className="text-sm font-medium text-ink/50 uppercase tracking-wide mb-4">What was booked</h2>
+                        <p className="font-display text-lg text-tide font-semibold">{bookableLabel(booking)}</p>
+                        <dl className="mt-4 grid grid-cols-2 gap-4 text-sm">
+                            <div>
+                                <dt className="text-ink/50">Start date</dt>
+                                <dd className="font-medium">{booking.start_date}</dd>
+                            </div>
+                            <div>
+                                <dt className="text-ink/50">End date</dt>
+                                <dd className="font-medium">{booking.end_date}</dd>
+                            </div>
+                            {booking.guests && (
+                                <div>
+                                    <dt className="text-ink/50">Guests</dt>
+                                    <dd className="font-medium">{booking.guests}</dd>
+                                </div>
+                            )}
+                            <div>
+                                <dt className="text-ink/50">Total price</dt>
+                                <dd className="font-medium">${Number(booking.total_price).toLocaleString()}</dd>
+                            </div>
+
+                            {booking.pickup_time && (<div><dt className="text-ink/50">Pickup time</dt><dd className="font-medium">{booking.pickup_time.slice(0, 5)}</dd></div>)}
+                            {booking.flight_or_train_number && (<div><dt className="text-ink/50">Flight / train</dt><dd className="font-medium">{booking.flight_or_train_number}</dd></div>)}
+                            {booking.pickup_address && (<div><dt className="text-ink/50">Address</dt><dd className="font-medium">{booking.pickup_address}</dd></div>)}
+                            {booking.with_driver && (<div><dt className="text-ink/50">Driver</dt><dd className="font-medium">Requested</dd></div>)}
+                        </dl>
+                        {booking.notes && (
+                            <div className="mt-4 pt-4 border-t border-ink/10">
+                                <p className="text-sm text-ink/50 mb-1">Customer notes</p>
+                                <p className="text-sm">{booking.notes}</p>
+                            </div>
+                        )}
+                    </section>
+
+                    <section className="bg-white rounded-xl border border-ink/10 p-6">
+                        <h2 className="text-sm font-medium text-ink/50 uppercase tracking-wide mb-4">Customer</h2>
+                        <dl className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
+                            <div>
+                                <dt className="text-ink/50">Name</dt>
+                                <dd className="font-medium">{booking.customer_name}</dd>
+                            </div>
+                            <div>
+                                <dt className="text-ink/50">Email</dt>
+                                <dd className="font-medium">{booking.customer_email}</dd>
+                            </div>
+                            <div>
+                                <dt className="text-ink/50">Phone</dt>
+                                <dd className="font-medium">{booking.customer_phone}</dd>
+                            </div>
+                            {booking.user && (
+                                <div>
+                                    <dt className="text-ink/50">Account</dt>
+                                    <dd className="font-medium">Registered user (#{booking.user.id})</dd>
+                                </div>
+                            )}
+                        </dl>
+                        
+                       <a> href={`https://wa.me/${booking.customer_phone.replace(/\D/g, '')}`}
+                            target="_blank"
+                            rel="noreferrer"
+                            className="inline-block mt-4 text-sm font-medium text-rust hover:underline"
+                        
+                            Message customer on WhatsApp →
+                            {booking.bookable_type?.endsWith('Tour') && ['confirmed', 'completed'].includes(booking.status) && (
+                       <a
+                            href={`https://wa.me/${(() => { const d = booking.customer_phone.replace(/\D/g, ''); return d.startsWith('0') ? '254' + d.slice(1) : d; })()}?text=${encodeURIComponent(
+                            `Hi ${booking.customer_name.split(' ')[0]}, thanks for joining ${booking.bookable?.name}! We'd love your rating and photos: ${window.location.origin}/experiences/${booking.bookable?.slug}/review?ref=${booking.reference}`
+                            )}`}
+                            target="_blank"
+                            rel="noreferrer"
+                            className="block mt-3 text-sm font-medium text-rust hover:underline"
+                        >
+                           Ask for a review on WhatsApp →
+                        </a>
+                         )}
+                        </a>
+                    </section>
+                </div>
+
+                <div className="space-y-6">
+                    <section className="bg-white rounded-xl border border-ink/10 p-6">
+                        <h2 className="text-sm font-medium text-ink/50 uppercase tracking-wide mb-4">Status</h2>
+                        <label className="block text-sm mb-1 text-ink/70">Booking status</label>
+                        <select
+                            className="w-full rounded-lg border border-ink/20 px-3 py-2 text-sm mb-4"
+                            value={booking.status}
+                            onChange={(e) => updateStatus('status', e.target.value)}
+                        >
+                            {statuses.map((s) => <option key={s} value={s}>{s}</option>)}
+                        </select>
+
+                        <label className="block text-sm mb-1 text-ink/70">Payment status</label>
+                        <select
+                            className="w-full rounded-lg border border-ink/20 px-3 py-2 text-sm"
+                            value={booking.payment_status}
+                            onChange={(e) => updateStatus('payment_status', e.target.value)}
+                        >
+                            {paymentStatuses.map((s) => <option key={s} value={s}>{s}</option>)}
+                        </select>
+                    </section>
+
+                    <section className="bg-white rounded-xl border border-ink/10 p-6">
+                        <h2 className="text-sm font-medium text-ink/50 uppercase tracking-wide mb-4">Reference</h2>
+                        <p className="font-mono text-sm">{booking.reference}</p>
+                        <p className="text-xs text-ink/50 mt-3">Created {new Date(booking.created_at).toLocaleString()}</p>
+                    </section>
+                </div>
+            </div>
+        </AdminLayout>
+    );
+}
+
+===== app\Http\Controllers\Admin\DashboardController.php =====
+
+<?php
+
+namespace App\Http\Controllers\Admin;
+
+use App\Http\Controllers\Controller;
+use App\Models\Booking;
+use App\Models\Tour;
+use App\Models\Vehicle;
+use App\Models\Villa;
+use Inertia\Inertia;
+
+class DashboardController extends Controller
+{
+    public function __invoke()
+    {
+        return \Inertia\Inertia::render('Admin/Dashboard', [
+            'stats' => [
+                'pendingBookings' => Booking::where('status', 'pending')->count(),
+                'confirmedBookings' => Booking::where('status', 'confirmed')->count(),
+                'vehicles' => Vehicle::count(),
+                'villas' => Villa::count(),
+                'tours' => Tour::count(),
+                'revenueThisMonth' => Booking::where('payment_status', 'paid')
+                    ->whereMonth('created_at', now()->month)
+                    ->sum('total_price'),
+            ],
+            'recentBookings' => Booking::with('bookable')->latest()->take(10)->get(),
+        ]);
+    }
+}
+
+===== app\Http\Controllers\Admin\DriverController.php =====
+
+<?php
+
+namespace App\Http\Controllers\Admin;
+
+use App\Http\Controllers\Controller;
+use App\Models\Driver;
+use App\Models\Vehicle;
+use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
+use Inertia\Inertia;
+use Inertia\Response;
+
+class DriverController extends Controller
+{
+    public function index(): Response
+    {
+        $drivers = Driver::with('vehicle')->orderBy('name')->get();
+
+        return Inertia::render('Admin/Drivers/Index', [
+            'drivers' => $drivers,
+            // Vehicles a driver could be assigned to: any car without a driver already.
+            'unassignedVehicles' => Vehicle::query()
+                ->whereDoesntHave('driver')
+                ->orderBy('name')
+                ->get(['id', 'name', 'category']),
+        ]);
+    }
+
+    public function create(): Response
+    {
+        return Inertia::render('Admin/Drivers/Create');
+    }
+
+    public function store(Request $request): RedirectResponse
+    {
+        $data = $request->validate([
+            'name' => ['required', 'string', 'max:255'],
+            'phone' => ['required', 'string', 'max:30'],
+            'license_number' => ['required', 'string', 'max:50', 'unique:drivers,license_number'],
+            'photo' => ['nullable', 'string', 'max:2048'],
+        ]);
+
+        $data['is_available'] = true;
+
+        Driver::create($data);
+
+        return redirect()->route('admin.drivers.index')->with('success', 'Driver added.');
+    }
+
+    /**
+     * Assign (or unassign, if vehicle_id is null) a driver to a car.
+     */
+    public function assign(Request $request, Driver $driver): RedirectResponse
+    {
+        $data = $request->validate([
+            'vehicle_id' => ['nullable', 'integer', 'exists:vehicles,id'],
+        ]);
+
+        if ($data['vehicle_id'] ?? null) {
+            // A car can only have one driver at a time — refuse if already taken.
+            $alreadyAssigned = Driver::where('vehicle_id', $data['vehicle_id'])
+                ->where('id', '!=', $driver->id)
+                ->exists();
+
+            if ($alreadyAssigned) {
+                return back()->with('error', 'That vehicle already has a driver assigned.');
+            }
+        }
+
+        $driver->update(['vehicle_id' => $data['vehicle_id'] ?? null]);
+
+        return back()->with('success', $data['vehicle_id'] ? 'Driver assigned.' : 'Driver unassigned.');
+    }
+}
+
+===== app\Http\Controllers\Admin\NotificationController.php =====
+
+<?php
+
+namespace App\Http\Controllers\Admin;
+
+use App\Http\Controllers\Controller;
+use App\Models\Booking;
+use App\Models\Driver;
+use App\Models\Notification;
+use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
+use Inertia\Inertia;
+use Inertia\Response;
+
+class NotificationController extends Controller
+{
+    public function index(): Response
+    {
+        return Inertia::render('Admin/Notifications/Index', [
+            'notifications' => Notification::with(['notifiable', 'booking'])->latest()->paginate(20),
+        ]);
+    }
+
+    public function markSent(Notification $notification): RedirectResponse
+    {
+        $notification->update(['status' => 'sent', 'sent_at' => now()]);
+
+        return back()->with('success', 'Marked as sent.');
+    }
+
+    /**
+     * Manually assign + notify a driver for a transfer booking
+     * (transfers aren't tied to a single vehicle, so this can't be automatic).
+     */
+    public function assignTransferDriver(Request $request, Booking $booking): RedirectResponse
+    {
+        $data = $request->validate([
+            'driver_id' => ['required', 'exists:drivers,id'],
+        ]);
+
+        $driver = Driver::findOrFail($data['driver_id']);
+
+        $route = $booking->bookable;
+        $leg = $route ? "{$route->fromLocation?->name} → {$route->toLocation?->name}" : 'transfer';
+
+        $message = "Hi {$driver->name}, transfer job: {$leg}. "
+        ."Date: {$booking->start_date->toDateString()}".($booking->pickup_time ? ' at '.substr($booking->pickup_time, 0, 5) : '').'. '
+        .($booking->pickup_address ? "Address: {$booking->pickup_address}. " : '')
+        .($booking->flight_or_train_number ? "Flight/train: {$booking->flight_or_train_number}. " : '')
+        ."Customer: {$booking->customer_name} ({$booking->customer_phone}). Ref: {$booking->reference}.";
+        Notification::create([
+            'notifiable_type' => Driver::class,
+            'notifiable_id' => $driver->id,
+            'booking_id' => $booking->id,
+            'purpose' => 'driver_job_assigned',
+            'phone' => $driver->phone,
+            'message' => $message,
+        ]);
+
+        return back()->with('success', 'Driver notified.');
+    }
+}
+
+===== app\Http\Controllers\Admin\ReviewController.php =====
+
+<?php
+
+namespace App\Http\Controllers\Admin;
+
+use App\Http\Controllers\Controller;
+use App\Models\Review;
+use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
+use Inertia\Inertia;
+use Inertia\Response;
+
+class ReviewController extends Controller
+{
+    public function index(Request $request): Response
+    {
+        $status = $request->query('status', 'pending');
+        abort_unless(in_array($status, ['pending', 'approved', 'rejected']), 404);
+
+        return Inertia::render('Admin/Reviews/Index', [
+            'reviews' => Review::with(['photos', 'reviewable', 'booking'])
+                ->where('status', $status)
+                ->latest()
+                ->paginate(15)
+                ->withQueryString(),
+            'counts' => Review::selectRaw('status, count(*) as total')->groupBy('status')->pluck('total', 'status'),
+            'status' => $status,
+        ]);
+    }
+
+    public function approve(Review $review): RedirectResponse
+    {
+        $review->update(['status' => 'approved', 'approved_at' => now()]);
+
+        return back()->with('success', 'Review approved and published.');
+    }
+
+    public function reject(Review $review): RedirectResponse
+    {
+        $review->update(['status' => 'rejected']);
+
+        return back()->with('success', 'Review rejected.');
+    }
+
+    public function reply(Request $request, Review $review): RedirectResponse
+    {
+        $data = $request->validate(['admin_reply' => ['nullable', 'string', 'max:1000']]);
+
+        $review->update(['admin_reply' => $data['admin_reply'] ?? null]);
+
+        return back()->with('success', 'Reply saved.');
+    }
+
+    public function destroy(Review $review): RedirectResponse
+    {
+        $review->delete();
+
+        return back()->with('success', 'Review and its photos deleted.');
+    }
+}
+
+===== app\Http\Controllers\Admin\VehicleController.php =====
+
+<?php
+
+namespace App\Http\Controllers\Admin;
+
+use App\Http\Controllers\Controller;
+use App\Models\Driver;
+use App\Models\Vehicle;
+use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
+use Inertia\Inertia;
+use Inertia\Response;
+
+class VehicleController extends Controller
+{
+    public function index(): Response
+    {
+        return Inertia::render('Admin/Vehicles/Index', [
+            'vehicles' => Vehicle::with('driver')->orderBy('name')->get(),
+            'unassignedDrivers' => Driver::whereNull('vehicle_id')->orderBy('name')->get(),
+        ]);
+    }
+
+
+    public function create(): Response
+   {
+        return Inertia::render('Admin/Vehicles/Create', [
+            'categories' => ['economy', 'midsize', 'suv', 'executive', 'van', 'bus'],
+        ]);
+    }
+
+    public function store(Request $request): RedirectResponse
+    {
+       $data = $request->validate([
+            'name' => ['required', 'string', 'max:255'],
+            'category' => ['required', 'in:economy,midsize,suv,executive,van,bus'],
+            'seats' => ['required', 'integer', 'min:1'],
+            'transmission' => ['required', 'in:manual,automatic'],
+            'price_per_day' => ['required', 'numeric', 'min:0'],
+            'description' => ['nullable', 'string'],
+        ]);
+
+       $data['slug'] = str($data['name'])->slug().'-'.\Illuminate\Support\Str::random(4);
+       $data['is_available'] = true;
+
+     Vehicle::create($data);
+
+         return redirect()->route('admin.vehicles.index')->with('success', 'Vehicle added.');
+    }
+    public function assignDriver(Request $request, Vehicle $vehicle): RedirectResponse
+    {
+        $data = $request->validate([
+            'driver_id' => ['required', 'exists:drivers,id'],
+        ]);
+
+        // Free up the vehicle's current driver, if any.
+        Driver::where('vehicle_id', $vehicle->id)->update(['vehicle_id' => null, 'is_available' => true]);
+
+        Driver::where('id', $data['driver_id'])->update([
+            'vehicle_id' => $vehicle->id,
+            'is_available' => false,
+        ]);
+
+        return back()->with('success', 'Driver assigned.');
+    }
+
+    public function deassignDriver(Vehicle $vehicle): RedirectResponse
+    {
+        Driver::where('vehicle_id', $vehicle->id)->update(['vehicle_id' => null, 'is_available' => true]);
+
+        return back()->with('success', 'Driver removed from vehicle.');
+    }
+}

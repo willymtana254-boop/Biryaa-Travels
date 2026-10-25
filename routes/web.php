@@ -62,8 +62,11 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'admin'])->group(fun
     Route::get('/', AdminDashboardController::class)->name('dashboard');
 
     Route::get('bookings', [AdminBookingController::class, 'index'])->name('bookings.index');
+    // "export" must come before "{booking}" or it would be read as a booking id
+    Route::get('bookings/export', [AdminBookingController::class, 'export'])->name('bookings.export');
     Route::get('bookings/{booking}', [AdminBookingController::class, 'show'])->name('bookings.show');
     Route::patch('bookings/{booking}', [AdminBookingController::class, 'update'])->name('bookings.update');
+    Route::delete('bookings/{booking}', [AdminBookingController::class, 'destroy'])->name('bookings.destroy');
     Route::post('bookings/{booking}/assign-transfer-driver', [AdminNotificationController::class, 'assignTransferDriver'])->name('bookings.assign-transfer-driver');
 
     Route::get('vehicles', [AdminVehicleController::class, 'index'])->name('vehicles.index');
@@ -84,8 +87,7 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'admin'])->group(fun
     Route::patch('reviews/{review}/approve', [AdminReviewController::class, 'approve'])->name('reviews.approve');
     Route::patch('reviews/{review}/reject', [AdminReviewController::class, 'reject'])->name('reviews.reject');
     Route::patch('reviews/{review}/reply', [AdminReviewController::class, 'reply'])->name('reviews.reply');
-    Route::delete('reviews/{review}', [AdminReviewController::class, 'destroy'])->name('reviews.destroy');   
-
-}); 
+    Route::delete('reviews/{review}', [AdminReviewController::class, 'destroy'])->name('reviews.destroy');
+});
 
 require __DIR__.'/auth.php';

@@ -1,5 +1,5 @@
 <?php
-
+use Inertia\Inertia;
 use App\Http\Controllers\Account\BookingController as AccountBookingController;
 use App\Http\Controllers\Admin\BookingController as AdminBookingController;
 use App\Http\Controllers\Admin\DashboardController as AdminDashboardController;
@@ -7,7 +7,8 @@ use App\Http\Controllers\Admin\DriverController;
 use App\Http\Controllers\Admin\NotificationController as AdminNotificationController;
 use App\Http\Controllers\Admin\VehicleController as AdminVehicleController;
 use App\Http\Controllers\BookingController;
-use App\Http\Controllers\DestinationController;
+use App\Http\Controllers\ContactController;
+use App\Http\Controllers\Admin\ContactMessageController;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\TourController;
 use App\Http\Controllers\TransferController;
@@ -17,6 +18,8 @@ use App\Http\Controllers\Admin\ReviewController as AdminReviewController;
 use App\Http\Controllers\GuestStoriesController;
 use App\Http\Controllers\ReviewController;
 use Illuminate\Support\Facades\Route;
+use App\Http\Controllers\GalleryController;
+use App\Http\Controllers\Admin\GalleryController as AdminGalleryController;
 
 /*
 |--------------------------------------------------------------------------
@@ -26,7 +29,11 @@ use Illuminate\Support\Facades\Route;
 Route::get('/', \App\Http\Controllers\WelcomeController::class)->name('welcome');
 Route::get('/home', HomeController::class)->name('home');
 
-Route::get('/destinations', [DestinationController::class, 'index'])->name('destinations.index');
+Route::redirect('/destinations', '/contact', 301);
+Route::get('/contact', [ContactController::class, 'show'])->name('contact');
+Route::post('/contact', [ContactController::class, 'store'])->middleware('throttle:5,10')->name('contact.store');
+
+Route::get('/about', fn () => Inertia::render('About'))->name('about');
 
 Route::get('/car-hire', [VehicleController::class, 'index'])->name('vehicles.index');
 Route::get('/car-hire/{vehicle}', [VehicleController::class, 'show'])->name('vehicles.show');
@@ -36,12 +43,13 @@ Route::get('/airport-transfers', [TransferController::class, 'index'])->name('tr
 Route::get('/villas', [VillaController::class, 'index'])->name('villas.index');
 Route::get('/villas/{villa:slug}', [VillaController::class, 'show'])->name('villas.show');
 
-Route::get('/experiences', [TourController::class, 'index'])->name('tours.index');
-Route::get('/experiences/{tour:slug}', [TourController::class, 'show'])->name('tours.show');
+Route::redirect('/experiences', '/gallery', 301);
+Route::get('/gallery', [GalleryController::class, 'index'])->name('gallery');
+Route::get('/gallery/photo/{photo}', [GalleryController::class, 'photo'])->name('gallery.photo');
 
 Route::get('/experiences/{tour:slug}/review', [ReviewController::class, 'create'])->name('reviews.create');
 Route::post('/experiences/{tour:slug}/review', [ReviewController::class, 'store'])->middleware('throttle:10,1')->name('reviews.store');
-Route::get('/guest-stories', GuestStoriesController::class)->name('guest-stories');
+Route::get('/guest-stories', fn () => Inertia::render('GuestStories'))->name('guest-stories');
 
 Route::get('/booking/quote', [BookingController::class, 'quote'])->middleware('throttle:60,1')->name('bookings.quote');
 
@@ -88,6 +96,16 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'admin'])->group(fun
     Route::patch('reviews/{review}/reject', [AdminReviewController::class, 'reject'])->name('reviews.reject');
     Route::patch('reviews/{review}/reply', [AdminReviewController::class, 'reply'])->name('reviews.reply');
     Route::delete('reviews/{review}', [AdminReviewController::class, 'destroy'])->name('reviews.destroy');
+
+    Route::get('messages', [ContactMessageController::class, 'index'])->name('messages.index');
+    Route::patch('messages/{message}/toggle-read', [ContactMessageController::class, 'toggleRead'])->name('messages.toggle-read');
+    Route::delete('messages/{message}', [ContactMessageController::class, 'destroy'])->name('messages.destroy');
+
+    Route::get('gallery', [AdminGalleryController::class, 'index'])->name('gallery.index');
+    Route::post('gallery', [AdminGalleryController::class, 'store'])->name('gallery.store');
+    Route::patch('gallery/{photo}', [AdminGalleryController::class, 'update'])->name('gallery.update');
+    Route::patch('gallery/{photo}/move', [AdminGalleryController::class, 'move'])->name('gallery.move');
+    Route::delete('gallery/{photo}', [AdminGalleryController::class, 'destroy'])->name('gallery.destroy');
 });
 
 require __DIR__.'/auth.php';

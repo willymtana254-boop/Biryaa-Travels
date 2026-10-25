@@ -7,6 +7,8 @@ const nav = [
     { href: '/admin/vehicles', label: 'Vehicles' },
     { href: '/admin/drivers', label: 'Drivers' },
     { href: '/admin/notifications', label: 'Notifications' },
+    { href: '/admin/messages', label: 'Messages' },
+    { href: '/admin/gallery', label: 'Gallery' },
     { href: '/admin/reviews', label: 'Reviews' },
 ];
 

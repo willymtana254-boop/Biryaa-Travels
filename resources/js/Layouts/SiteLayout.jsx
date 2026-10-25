@@ -6,9 +6,9 @@ const nav = [
     { href: '/car-hire', label: 'Car Hire' },
     { href: '/airport-transfers', label: 'Transfers' },
     { href: '/villas', label: 'Accommodation' },
-    { href: '/experiences', label: 'Experiences' },
-    { href: '/home#services', label: 'About Us & Services' },
-    { href: '/destinations', label: 'Explore Destinations' },
+    { href: '/gallery', label: 'Gallery' },
+    { href: '/about', label: 'About Us & Services' },
+    { href: '/contact', label: 'Contact Us' },
 ];
 
 const LOGO = '/images/biryaa-logo.png';

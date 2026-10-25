@@ -1,7 +1,8 @@
 import { Head, Link } from '@inertiajs/react';
 import SiteLayout from '../Layouts/SiteLayout';
 import CoastRoute from '../Components/CoastRoute';
-import AboutServices from '../Components/AboutServices';
+import AboutServices from "../Components/AboutServices";
+
 
 export default function Home({ locations = [] }) {
     return (

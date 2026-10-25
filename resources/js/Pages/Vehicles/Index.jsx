@@ -15,7 +15,7 @@ export default function VehiclesIndex({ vehicles, categories, filters }) {
                 <PageHeader
                     eyebrow="Self-Drive Car Hire"
                     title="Drive the coast at your own pace"
-                    description="Economy, midsize, SUV, executive, van and bus options — 24-hour hire periods, roadside support included."
+                    description="All,Economy, midsize, SUV, executive, van and bus options — 24-hour hire periods, roadside support included."
                 />
 
                 <div className="mt-8 flex flex-wrap gap-2">

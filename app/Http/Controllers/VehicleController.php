@@ -21,7 +21,7 @@ class VehicleController extends Controller
         return Inertia::render('Vehicles/Index', [
             'vehicles' => $vehicles,
             'filters' => $request->only('category'),
-            'categories' => ['economy', 'midsize', 'suv', 'executive', 'van', 'bus'],
+            'categories' => ['All', 'Economy', 'Midsize', 'SUV', 'Executive', 'Van', 'Bus'],
         ]);
     }
 

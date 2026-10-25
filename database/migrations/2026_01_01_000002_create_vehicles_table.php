@@ -12,7 +12,7 @@ return new class extends Migration
             $table->id();
             $table->string('name');
             $table->string('slug')->unique();
-            $table->enum('category', ['economy', 'midsize', 'suv', 'executive', 'van', 'bus']);
+            $table->enum('category', ['All', 'Economy', 'Midsize', 'SUV', 'Executive', 'Van', 'Bus']);
             $table->unsignedTinyInteger('seats');
             $table->enum('transmission', ['manual', 'automatic'])->default('manual');
             $table->decimal('price_per_day', 10, 2);

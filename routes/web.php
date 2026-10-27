@@ -33,7 +33,7 @@ Route::redirect('/destinations', '/contact', 301);
 Route::get('/contact', [ContactController::class, 'show'])->name('contact');
 Route::post('/contact', [ContactController::class, 'store'])->middleware('throttle:5,10')->name('contact.store');
 
-Route::get('/about', fn () => Inertia::render('About'))->name('about');
+Route::inertia('/about', 'About')->name('about');
 
 Route::get('/car-hire', [VehicleController::class, 'index'])->name('vehicles.index');
 Route::get('/car-hire/{vehicle}', [VehicleController::class, 'show'])->name('vehicles.show');
@@ -49,7 +49,7 @@ Route::get('/gallery/photo/{photo}', [GalleryController::class, 'photo'])->name(
 
 Route::get('/experiences/{tour:slug}/review', [ReviewController::class, 'create'])->name('reviews.create');
 Route::post('/experiences/{tour:slug}/review', [ReviewController::class, 'store'])->middleware('throttle:10,1')->name('reviews.store');
-Route::get('/guest-stories', fn () => Inertia::render('GuestStories'))->name('guest-stories');
+Route::inertia('/guest-stories', 'GuestStories')->name('guest-stories');
 
 Route::get('/booking/quote', [BookingController::class, 'quote'])->middleware('throttle:60,1')->name('bookings.quote');
 

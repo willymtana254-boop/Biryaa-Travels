@@ -10,16 +10,19 @@ use App\Http\Controllers\BookingController;
 use App\Http\Controllers\ContactController;
 use App\Http\Controllers\Admin\ContactMessageController;
 use App\Http\Controllers\HomeController;
-use App\Http\Controllers\TourController;
 use App\Http\Controllers\TransferController;
 use App\Http\Controllers\VehicleController;
 use App\Http\Controllers\VillaController;
 use App\Http\Controllers\Admin\ReviewController as AdminReviewController;
-use App\Http\Controllers\GuestStoriesController;
 use App\Http\Controllers\ReviewController;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\GalleryController;
 use App\Http\Controllers\Admin\GalleryController as AdminGalleryController;
+use App\Http\Controllers\VerificationController;
+use App\Http\Controllers\Admin\VerificationController as AdminVerificationController;
+use App\Http\Controllers\TestimonialController;
+use App\Http\Controllers\Admin\TestimonialController as AdminTestimonialController;
+
 
 /*
 |--------------------------------------------------------------------------
@@ -51,16 +54,37 @@ Route::get('/experiences/{tour:slug}/review', [ReviewController::class, 'create'
 Route::post('/experiences/{tour:slug}/review', [ReviewController::class, 'store'])->middleware('throttle:10,1')->name('reviews.store');
 Route::inertia('/guest-stories', 'GuestStories')->name('guest-stories');
 
+Route::get('/testimonials', [TestimonialController::class, 'index'])->name('testimonials');
+Route::get('/testimonials/featured', [TestimonialController::class, 'featured'])->name('testimonials.featured');
+Route::post('/testimonials', [TestimonialController::class, 'store'])->middleware('throttle:5,10')->name('testimonials.store');
+
+Route::inertia('/privacy', 'Privacy')->name('privacy');
+
+Route::get('/verify', [VerificationController::class, 'lookup'])->name('verify.lookup');
+Route::post('/verify', [VerificationController::class, 'start'])->middleware('throttle:10,1')->name('verify.start');
+Route::get('/verify/{reference}', [VerificationController::class, 'show'])->name('verify.show');
+Route::post('/verify/{reference}/details', [VerificationController::class, 'details'])->name('verify.details');
+Route::post('/verify/{reference}/document', [VerificationController::class, 'document'])->name('verify.document');
+Route::post('/verify/{reference}/selfie', [VerificationController::class, 'selfie'])->name('verify.selfie');
+Route::post('/verify/{reference}/send-code', [VerificationController::class, 'sendCode'])->middleware('throttle:5,1')->name('verify.send-code');
+Route::post('/verify/{reference}/check-code', [VerificationController::class, 'checkCode'])->middleware('throttle:10,1')->name('verify.check-code');
+Route::post('/verify/{reference}/submit', [VerificationController::class, 'submit'])->name('verify.submit');
+
 Route::get('/booking/quote', [BookingController::class, 'quote'])->middleware('throttle:60,1')->name('bookings.quote');
 
 Route::get('/book/{type}/{id}', [BookingController::class, 'create'])->name('bookings.create');
 Route::post('/bookings', [BookingController::class, 'store'])->name('bookings.store');
 Route::get('/bookings/{reference}/confirmation', [BookingController::class, 'confirmation'])->name('bookings.confirmation');
 
-Route::middleware('auth')->prefix('account')->name('account.')->group(function () {
-    Route::get('/bookings', [AccountBookingController::class, 'index'])->name('bookings');
+Route::middleware('auth')->group(function () {
+    Route::get('/email/verify', [\App\Http\Controllers\AuthController::class, 'verifyNotice'])->name('verification.notice');
+    Route::get('/email/verify/{id}/{hash}', [\App\Http\Controllers\AuthController::class, 'verifyEmail'])->middleware('signed')->name('verification.verify');
+    Route::post('/email/verification-notification', [\App\Http\Controllers\AuthController::class, 'resendVerification'])->middleware('throttle:3,1')->name('verification.send');
 });
 
+Route::middleware(['auth', 'verified'])->prefix('account')->name('account.')->group(function () {
+    Route::get('/bookings', [AccountBookingController::class, 'index'])->name('bookings');
+});
 /*
 |--------------------------------------------------------------------------
 | Admin back-office
@@ -76,6 +100,10 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'admin'])->group(fun
     Route::patch('bookings/{booking}', [AdminBookingController::class, 'update'])->name('bookings.update');
     Route::delete('bookings/{booking}', [AdminBookingController::class, 'destroy'])->name('bookings.destroy');
     Route::post('bookings/{booking}/assign-transfer-driver', [AdminNotificationController::class, 'assignTransferDriver'])->name('bookings.assign-transfer-driver');
+    Route::get('verifications/{verification}/image/{kind}', [AdminVerificationController::class, 'image'])->name('verifications.image');
+    Route::post('verifications/{verification}/decide', [AdminVerificationController::class, 'decide'])->name('verifications.decide');
+    Route::post('verifications/{verification}/phone', [AdminVerificationController::class, 'verifyPhone'])->name('verifications.phone');
+    Route::delete('verifications/{verification}', [AdminVerificationController::class, 'destroy'])->name('verifications.destroy');
 
     Route::get('vehicles', [AdminVehicleController::class, 'index'])->name('vehicles.index');
     Route::get('vehicles/create', [AdminVehicleController::class, 'create'])->name('vehicles.create');
@@ -106,6 +134,13 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'admin'])->group(fun
     Route::patch('gallery/{photo}', [AdminGalleryController::class, 'update'])->name('gallery.update');
     Route::patch('gallery/{photo}/move', [AdminGalleryController::class, 'move'])->name('gallery.move');
     Route::delete('gallery/{photo}', [AdminGalleryController::class, 'destroy'])->name('gallery.destroy');
+
+    Route::get('testimonials', [AdminTestimonialController::class, 'index'])->name('testimonials.index');
+    Route::post('testimonials', [AdminTestimonialController::class, 'store'])->name('testimonials.store');
+    Route::patch('testimonials/{testimonial}/approve', [AdminTestimonialController::class, 'toggleApproved'])->name('testimonials.approve');
+    Route::patch('testimonials/{testimonial}/feature', [AdminTestimonialController::class, 'toggleFeatured'])->name('testimonials.feature');
+    Route::delete('testimonials/{testimonial}', [AdminTestimonialController::class, 'destroy'])->name('testimonials.destroy');
 });
 
 require __DIR__.'/auth.php';
+

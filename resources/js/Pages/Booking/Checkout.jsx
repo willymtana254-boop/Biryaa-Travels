@@ -2,6 +2,22 @@ import { useState, useEffect } from 'react';
 import { Head, useForm } from '@inertiajs/react';
 import SiteLayout from '../../Layouts/SiteLayout';
 import { Money, useMoney } from '../../lib/currency';
+import PhoneInput from '../../Components/PhoneInput';
+import PrivacyNotice from '../../Components/PrivacyNotice';
+import { phoneError } from '../../lib/phone';
+
+const FIELD_NAMES = {
+    customer_name: 'Full name',
+    customer_phone: 'Phone',
+    customer_email: 'Email',
+    start_date: 'Start date',
+    end_date: 'End date',
+    pickup_time: 'Pickup time',
+    guests: 'Guests',
+    flight_or_train_number: 'Flight / train number',
+    pickup_address: 'Address',
+    notes: 'Notes',
+};
 
 const titleFor = (type, bookable) =>
     type === 'transfer' ? `${bookable.from_location?.name} → ${bookable.to_location?.name}` : bookable.name;
@@ -9,7 +25,7 @@ const titleFor = (type, bookable) =>
 const needsEndDate = (type) => type === 'vehicle' || type === 'villa';
 
 export default function Checkout({ type, bookable, pricePerUnit, vehicles = [], extraOptions = [], driverFeePerDay = 0, discountTiers = [] }) {
-    const { data, setData, post, processing, errors, transform } = useForm({
+    const { data, setData, post, processing, errors, transform, setError, clearErrors } = useForm({
         type,
         bookable_id: bookable.id,
         customer_name: '',
@@ -82,7 +98,22 @@ export default function Checkout({ type, bookable, pricePerUnit, vehicles = [], 
 
     const submit = (e) => {
         e.preventDefault();
-        post('/bookings');
+        clearErrors();
+
+        // Check the phone here first so the person sees the exact problem straight away.
+        const problem = phoneError(data.customer_phone);
+        if (problem) {
+            setError('customer_phone', problem);
+            document.getElementById('customer_phone')?.focus();
+            return;
+        }
+
+        post('/bookings', {
+            onError: (errs) => {
+                const first = Object.keys(errs)[0];
+                if (first) document.getElementById(first)?.focus();
+            },
+        });
     };
 
     const unavailable = quote?.available === false;
@@ -106,28 +137,40 @@ export default function Checkout({ type, bookable, pricePerUnit, vehicles = [], 
                     </p>
                 )}
 
-                <form onSubmit={submit} className="mt-10 space-y-6">
+                <form onSubmit={submit} className="mt-10 space-y-6" noValidate>
+                    {Object.keys(errors).length > 0 && (
+                        <div className="rounded-lg bg-rust/10 px-4 py-3 text-sm text-rust" role="alert">
+                            <p className="font-medium">Please fix the following:</p>
+                            <ul className="mt-1 list-disc pl-5 space-y-0.5">
+                                {Object.entries(errors).map(([key, message]) => (
+                                    <li key={key}>{FIELD_NAMES[key] ? `${FIELD_NAMES[key]}: ` : ''}{message}</li>
+                                ))}
+                            </ul>
+                        </div>
+                    )}
+
                     <div className="grid sm:grid-cols-2 gap-6">
                         <Field label="Full name" error={errors.customer_name}>
-                            <input className="input" value={data.customer_name} onChange={(e) => setData('customer_name', e.target.value)} required />
+                            <input id="customer_name" className="input" value={data.customer_name} onChange={(e) => setData('customer_name', e.target.value)} required />
                         </Field>
-                        <Field label="Phone (WhatsApp)" error={errors.customer_phone}>
-                            <input className="input" inputMode="tel" placeholder="0712 345 678 or +44 7911 123456" value={data.customer_phone} onChange={(e) => setData('customer_phone', e.target.value)} required />
+                        <Field label="Phone (WhatsApp)">
+                            <PhoneInput id="customer_phone" value={data.customer_phone} onChange={(v) => setData('customer_phone', v)} error={errors.customer_phone} required />
                         </Field>
                     </div>
-                    <p className="-mt-3 text-xs text-ink/50">Outside Kenya? Please include your country code, e.g. +44.</p>
 
                     <Field label="Email" error={errors.customer_email}>
-                        <input type="email" className="input" value={data.customer_email} onChange={(e) => setData('customer_email', e.target.value)} required />
+                        <input id="customer_email" type="email" className="input" value={data.customer_email} onChange={(e) => setData('customer_email', e.target.value)} required />
                     </Field>
+
+                    <PrivacyNotice />
 
                     <div className="grid sm:grid-cols-2 gap-6">
                         <Field label={needsEndDate(type) ? (type === 'villa' ? 'Check-in' : 'Pick-up date') : 'Date'} error={errors.start_date}>
-                            <input type="date" className="input" value={data.start_date} onChange={(e) => setData('start_date', e.target.value)} required />
+                            <input id="start_date" type="date" className="input" value={data.start_date} onChange={(e) => setData('start_date', e.target.value)} required />
                         </Field>
                         {needsEndDate(type) && (
                             <Field label={type === 'villa' ? 'Check-out' : 'Return date'} error={errors.end_date}>
-                                <input type="date" className="input" min={data.start_date || undefined} value={data.end_date} onChange={(e) => setData('end_date', e.target.value)} />
+                                <input id="end_date" type="date" className="input" min={data.start_date || undefined} value={data.end_date} onChange={(e) => setData('end_date', e.target.value)} />
                             </Field>
                         )}
                         {type === 'transfer' && (
@@ -232,6 +275,12 @@ export default function Checkout({ type, bookable, pricePerUnit, vehicles = [], 
                             </>
                         )}
                     </div>
+
+                    {type === 'vehicle' && (
+                        <p className="rounded-lg bg-sun/30 px-4 py-3 text-xs text-ink/80">
+                            Car hire requires verification: after booking you will be asked for your ID or passport, driving licence, address and a live selfie. Please have them ready.
+                        </p>
+                    )}
 
                     <button
                         type="submit"

@@ -9,6 +9,7 @@ const nav = [
     { href: '/admin/notifications', label: 'Notifications' },
     { href: '/admin/messages', label: 'Messages' },
     { href: '/admin/gallery', label: 'Gallery' },
+    { href: '/admin/testimonials', label: 'Testimonials' },
     { href: '/admin/reviews', label: 'Reviews' },
 ];
 

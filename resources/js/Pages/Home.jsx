@@ -38,6 +38,12 @@ export default function Home({ locations = [] }) {
                             Find Accommodation
                         </Link>
                     </div>
+                    <Link
+                        href="/testimonials"
+                        className="inline-block rounded-full bg-sun text-ink px-6 py-3 font-medium hover:brightness-95 transition"
+                    >
+                        Experiences
+                    </Link>
 
                     <div className="mt-16 text-paper hidden md:block">
                         <CoastRoute className="w-full max-w-3xl h-24" />

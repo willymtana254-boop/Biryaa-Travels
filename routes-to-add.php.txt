@@ -1,0 +1,15 @@
+// ---- web.php: top, with the other use lines ----
+use App\Http\Controllers\TestimonialController;
+use App\Http\Controllers\Admin\TestimonialController as AdminTestimonialController;
+
+// ---- web.php: public routes (e.g. after the /guest-stories line) ----
+Route::get('/testimonials', [TestimonialController::class, 'index'])->name('testimonials');
+Route::get('/testimonials/featured', [TestimonialController::class, 'featured'])->name('testimonials.featured');
+Route::post('/testimonials', [TestimonialController::class, 'store'])->middleware('throttle:5,10')->name('testimonials.store');
+
+// ---- web.php: INSIDE the admin group ----
+Route::get('testimonials', [AdminTestimonialController::class, 'index'])->name('testimonials.index');
+Route::post('testimonials', [AdminTestimonialController::class, 'store'])->name('testimonials.store');
+Route::patch('testimonials/{testimonial}/approve', [AdminTestimonialController::class, 'toggleApproved'])->name('testimonials.approve');
+Route::patch('testimonials/{testimonial}/feature', [AdminTestimonialController::class, 'toggleFeatured'])->name('testimonials.feature');
+Route::delete('testimonials/{testimonial}', [AdminTestimonialController::class, 'destroy'])->name('testimonials.destroy');

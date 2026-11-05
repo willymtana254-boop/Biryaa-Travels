@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Booking;
 use App\Models\Notification;
+use App\Models\RentalVerification;
 use App\Models\Review;
 use App\Models\Tour;
 use App\Models\TransferRoute;
@@ -96,7 +97,37 @@ class BookingController extends Controller
             $booking->bookable->load(['fromLocation', 'toLocation']);
         }
 
+        $verification = null;
+
+        if ($booking->bookable_type === Vehicle::class) {
+            $v = RentalVerification::with('documents:id,rental_verification_id,kind')->where('booking_id', $booking->id)->first();
+
+            $verification = $v ? [
+                'id' => $v->id,
+                'status' => $v->status,
+                'full_name' => $v->full_name,
+                'id_type' => $v->id_type,
+                'id_number' => $v->id_number,
+                'address_line' => $v->address_line,
+                'town' => $v->town,
+                'country' => $v->country,
+                'licence_number' => $v->licence_number,
+                'licence_expiry' => optional($v->licence_expiry)->toDateString(),
+                'phone' => $v->phone,
+                'phone_verified_at' => optional($v->phone_verified_at)->toIso8601String(),
+                'phone_verified_by' => $v->phone_verified_by,
+                'consent_at' => optional($v->consent_at)->toIso8601String(),
+                'submitted_at' => optional($v->submitted_at)->toIso8601String(),
+                'reviewed_by' => $v->reviewed_by,
+                'reviewer_note' => $v->reviewer_note,
+                'purge_after' => optional($v->purge_after)->toDateString(),
+                'documents' => $v->documents->pluck('kind')->all(),
+            ] : null;
+        }
+
         return Inertia::render('Admin/Bookings/Show', [
+            'verification' => $verification,
+            'verificationRequired' => (bool) config('verification.required'),
             'booking' => $booking,
             'bookingType' => match ($booking->bookable_type) {
                 Vehicle::class => 'Car Hire',
@@ -115,6 +146,15 @@ class BookingController extends Controller
             'status' => ['sometimes', Rule::in(['pending', 'confirmed', 'cancelled', 'completed'])],
             'payment_status' => ['sometimes', Rule::in(['unpaid', 'paid', 'refunded'])],
         ]);
+
+        if (
+            ($data['status'] ?? null) === 'confirmed'
+            && $booking->bookable_type === Vehicle::class
+            && config('verification.required')
+            && ! RentalVerification::where('booking_id', $booking->id)->where('status', 'approved')->exists()
+        ) {
+            return back()->with('error', 'Approve the hirer\'s ID, licence and selfie verification before confirming this car hire.');
+        }
 
         $booking->update($data);
 

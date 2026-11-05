@@ -7,6 +7,7 @@ const nav = [
     { href: '/airport-transfers', label: 'Transfers' },
     { href: '/villas', label: 'Accommodation' },
     { href: '/gallery', label: 'Gallery' },
+    { href: '/testimonials', label: 'Experiences' },
     { href: '/about', label: 'About Us & Services' },
     { href: '/contact', label: 'Contact Us' },
 ];
@@ -16,6 +17,8 @@ const LOGO = '/images/biryaa-logo.png';
 export default function SiteLayout({ children }) {
     const { props } = usePage();
     const user = props.auth?.user;
+    const path = (props.url || (typeof window !== 'undefined' ? window.location.pathname : '')).split('?')[0];
+    const isActive = (href) => path === href || path.startsWith(href + '/');
     const flash = props.flash || {};
     const [menuOpen, setMenuOpen] = useState(false);
 
@@ -41,9 +44,13 @@ export default function SiteLayout({ children }) {
                         </Link>
                     </div>
 
-                    <nav className="hidden md:flex items-center gap-8 text-sm font-medium">
+                    <nav className="hidden md:flex items-center gap-5 lg:gap-7 text-sm font-medium">
                         {nav.map((item) => (
-                            <Link key={item.href} href={item.href} className="text-ink/70 hover:text-tide transition-colors">
+                            <Link
+                                key={item.href}
+                                href={item.href}
+                                className={`transition-colors hover:text-tide ${isActive(item.href) ? 'text-tide' : 'text-ink/70'}`}
+                            >
                                 {item.label}
                             </Link>
                         ))}
@@ -100,7 +107,7 @@ export default function SiteLayout({ children }) {
                                 key={item.href}
                                 href={item.href}
                                 onClick={() => setMenuOpen(false)}
-                                className="px-3 py-3 rounded-lg text-ink/80 font-medium hover:bg-sand hover:text-tide transition-colors"
+                                className={`px-3 py-3 rounded-lg font-medium hover:bg-sand hover:text-tide transition-colors ${isActive(item.href) ? 'bg-sand text-tide' : 'text-ink/80'}`}
                             >
                                 {item.label}
                             </Link>
@@ -164,8 +171,8 @@ export default function SiteLayout({ children }) {
                             <li><Link href="/car-hire" className="hover:text-paper">Self-Drive Car Hire</Link></li>
                             <li><Link href="/airport-transfers" className="hover:text-paper">Airport Transfers</Link></li>
                             <li><Link href="/villas" className="hover:text-paper">Accommodation</Link></li>
-                            <li><Link href="/experiences" className="hover:text-paper">Tours & Experiences</Link></li>
-                            <li><Link href="/destinations" className="hover:text-paper">Destinations</Link></li>
+                            <li><Link href="/gallery" className="hover:text-paper">Gallery</Link></li>
+                            <li><Link href="/testimonials" className="hover:text-paper">Guest Experiences</Link></li>
                         </ul>
                     </div>
                     <div>
@@ -197,6 +204,8 @@ export default function SiteLayout({ children }) {
                 </div>
                 <div className="border-t border-paper/10 py-4 text-center text-xs text-paper/50">
                     © {new Date().getFullYear()} Biryaa Travels Ltd. All rights reserved.
+                    <span className="mx-2">·</span>
+                    <Link href="/privacy" className="hover:text-paper">Privacy Policy</Link>
                 </div>
             </footer>
         </div>

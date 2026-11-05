@@ -15,6 +15,8 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Validation\Rule;
+use App\Rules\ValidPhone;
+use App\Support\PhoneNumber;
 use Inertia\Inertia;
 use Inertia\Response;
 
@@ -95,7 +97,7 @@ class BookingController extends Controller
             'bookable_id' => ['required', 'integer'],
             'customer_name' => ['required', 'string', 'max:255'],
             'customer_email' => ['required', 'email', 'max:255'],
-            'customer_phone' => ['required', 'string', 'max:30', 'regex:/^\+?[0-9\s\-()]{9,20}$/'],
+            'customer_phone' => ['required', 'string', new ValidPhone],
             'start_date' => ['required', 'date', 'after_or_equal:today'],
             'end_date' => ['nullable', 'date', 'after_or_equal:start_date'],
             'guests' => [Rule::requiredIf($request->input('type') === 'tour'), 'nullable', 'integer', 'min:1', 'max:100'],
@@ -107,10 +109,11 @@ class BookingController extends Controller
             'extras.*' => ['integer', 'min:0', 'max:10'],
             'notes' => ['nullable', 'string', 'max:1000'],
         ], [
-            'customer_phone.regex' => 'Please enter a valid phone number, e.g. 0712 345 678 or +44 7911 123456.',
             'pickup_time.required' => 'Please tell us the pickup time.',
             'guests.required' => 'Please tell us how many guests.',
         ]);
+
+        $data['customer_phone'] = PhoneNumber::normalize($data['customer_phone']);
 
         $modelClass = $this->resolveType($data['type']);
         $bookable = $modelClass::findOrFail($data['bookable_id']);
@@ -159,6 +162,14 @@ class BookingController extends Controller
             if ($driver) {
                 Notification::forDriverJob($driver, $booking);
             }
+        }
+
+        // Car hire: send the hirer straight to ID / licence / selfie verification.
+        if ($modelClass === Vehicle::class) {
+            $request->session()->put('verify.'.$booking->reference, true);
+
+            return redirect()->route('verify.show', $booking->reference)
+                ->with('success', 'Booking received. Please complete verification so we can confirm your car.');
         }
 
         return redirect()->route('bookings.confirmation', $booking->reference);

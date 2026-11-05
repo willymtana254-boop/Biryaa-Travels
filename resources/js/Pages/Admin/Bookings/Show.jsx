@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import { Head, Link, router } from '@inertiajs/react';
 import AdminLayout from '../../../Layouts/AdminLayout';
 import { kes, waNumber } from '../../../lib/kes';
@@ -5,7 +6,10 @@ import { kes, waNumber } from '../../../lib/kes';
 const statuses = ['pending', 'confirmed', 'cancelled', 'completed'];
 const paymentStatuses = ['unpaid', 'paid', 'refunded'];
 
-export default function BookingsShow({ booking, bookingType, title }) {
+export default function BookingsShow({ booking, bookingType, title, verification, verificationRequired }) {
+    const isCar = booking.bookable_type?.endsWith('Vehicle');
+    const [note, setNote] = useState('');
+    const verifyLink = `${window.location.origin}/verify?ref=${booking.reference}`;
     const update = (field, value) => {
         router.patch(`/admin/bookings/${booking.id}`, { [field]: value }, { preserveScroll: true });
     };
@@ -143,6 +147,114 @@ export default function BookingsShow({ booking, bookingType, title }) {
                             )}
                         </div>
                     </section>
+
+                    {isCar && (
+                        <section className="bg-white rounded-xl border border-ink/10 p-6">
+                            <div className="flex items-center justify-between flex-wrap gap-2 mb-4">
+                                <h2 className="text-sm font-medium text-ink/50 uppercase tracking-wide">Hirer verification</h2>
+                                <span className={`px-3 py-1 rounded-full text-xs font-medium ${
+                                    verification?.status === 'approved' ? 'bg-green-100 text-green-800'
+                                    : verification?.status === 'pending' ? 'bg-sun/40 text-ink'
+                                    : verification?.status === 'rejected' ? 'bg-rust/10 text-rust'
+                                    : 'bg-sand text-ink/70'}`}>
+                                    {verification?.status === 'pending' ? 'Waiting for review' : verification?.status || 'Not started'}
+                                </span>
+                            </div>
+
+                            {!verification || verification.status === 'incomplete' ? (
+                                <div className="text-sm text-ink/70 space-y-3">
+                                    <p>The hirer has not sent their ID, licence and selfie yet.{verificationRequired && ' You cannot confirm this booking until they do.'}</p>
+                                    <a
+                                        href={`https://wa.me/${phone}?text=${encodeURIComponent(`Hi ${firstName}, to confirm your car hire ${booking.reference} please complete verification (ID, driving licence and a live selfie): ${verifyLink}`)}`}
+                                        target="_blank"
+                                        rel="noreferrer"
+                                        className="inline-block rounded-full bg-[#25D366] text-white px-5 py-2 text-sm font-medium hover:brightness-95 transition"
+                                    >
+                                        Request verification on WhatsApp
+                                    </a>
+                                </div>
+                            ) : (
+                                <div className="space-y-5 text-sm">
+                                    <dl className="grid sm:grid-cols-2 gap-4">
+                                        <div><dt className="text-ink/50">Name on ID</dt><dd className="font-medium">{verification.full_name}</dd></div>
+                                        <div><dt className="text-ink/50">{verification.id_type === 'passport' ? 'Passport no.' : 'National ID no.'}</dt><dd className="font-medium">{verification.id_number}</dd></div>
+                                        <div><dt className="text-ink/50">Licence no.</dt><dd className="font-medium">{verification.licence_number}</dd></div>
+                                        <div><dt className="text-ink/50">Licence expires</dt><dd className="font-medium">{verification.licence_expiry}</dd></div>
+                                        <div className="sm:col-span-2"><dt className="text-ink/50">Address</dt><dd className="font-medium">{verification.address_line}, {verification.town}, {verification.country}</dd></div>
+                                        <div>
+                                            <dt className="text-ink/50">Phone</dt>
+                                            <dd className="font-medium">
+                                                {verification.phone}{' '}
+                                                {verification.phone_verified_at
+                                                    ? <span className="text-green-700">✓ confirmed ({verification.phone_verified_by})</span>
+                                                    : <span className="text-rust">not confirmed</span>}
+                                            </dd>
+                                        </div>
+                                    </dl>
+
+                                    {!verification.phone_verified_at && (
+                                        <button
+                                            type="button"
+                                            onClick={() => router.post(`/admin/verifications/${verification.id}/phone`, {}, { preserveScroll: true })}
+                                            className="rounded-full border border-tide text-tide px-4 py-1.5 text-xs font-medium hover:bg-tide hover:text-white transition-colors"
+                                        >
+                                            I called or messaged them: mark phone confirmed
+                                        </button>
+                                    )}
+
+                                    {verification.documents.length > 0 ? (
+                                        <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                                            {verification.documents.map((kind) => (
+                                                <a key={kind} href={`/admin/verifications/${verification.id}/image/${kind}`} target="_blank" rel="noreferrer" className="block">
+                                                    <img
+                                                        src={`/admin/verifications/${verification.id}/image/${kind}`}
+                                                        alt={kind}
+                                                        className="w-full h-32 object-cover rounded-lg border border-ink/10"
+                                                    />
+                                                    <span className="text-xs text-ink/60">{kind.replace('_', ' ')}</span>
+                                                </a>
+                                            ))}
+                                        </div>
+                                    ) : (
+                                        <p className="text-ink/50">Documents have been deleted.</p>
+                                    )}
+
+                                    <p className="text-xs text-ink/50">
+                                        Compare the selfie with the photo on the ID and licence. Check the names match and the licence is valid for the whole hire.
+                                        {verification.purge_after && ` Images are deleted automatically on ${verification.purge_after}.`}
+                                    </p>
+
+                                    {verification.status === 'pending' && (
+                                        <div className="space-y-2">
+                                            <textarea
+                                                value={note}
+                                                onChange={(e) => setNote(e.target.value)}
+                                                rows={2}
+                                                placeholder="If rejecting, tell the hirer what to fix"
+                                                className="w-full rounded-lg border border-ink/20 px-3 py-2 text-sm"
+                                            />
+                                            <div className="flex gap-3">
+                                                <button type="button" onClick={() => router.post(`/admin/verifications/${verification.id}/decide`, { decision: 'approved', note }, { preserveScroll: true })} className="rounded-full bg-tide text-white px-5 py-2 text-sm font-medium hover:bg-tide-light transition-colors">Approve</button>
+                                                <button type="button" onClick={() => router.post(`/admin/verifications/${verification.id}/decide`, { decision: 'rejected', note }, { preserveScroll: true })} className="rounded-full border border-rust text-rust px-5 py-2 text-sm font-medium hover:bg-rust hover:text-white transition-colors">Reject</button>
+                                            </div>
+                                        </div>
+                                    )}
+
+                                    {verification.reviewer_note && <p className="text-ink/70">Note: {verification.reviewer_note}</p>}
+
+                                    {verification.documents.length > 0 && (
+                                        <button
+                                            type="button"
+                                            onClick={() => window.confirm('Delete the ID, licence and selfie images now? This cannot be undone.') && router.delete(`/admin/verifications/${verification.id}`, { preserveScroll: true })}
+                                            className="text-xs text-rust underline"
+                                        >
+                                            Delete documents now
+                                        </button>
+                                    )}
+                                </div>
+                            )}
+                        </section>
+                    )}
                 </div>
 
                 <div className="space-y-6">

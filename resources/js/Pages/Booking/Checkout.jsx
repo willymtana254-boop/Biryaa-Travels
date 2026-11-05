@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import { Head, useForm } from '@inertiajs/react';
+import { Head, Link, useForm } from '@inertiajs/react';
 import SiteLayout from '../../Layouts/SiteLayout';
 import { Money, useMoney } from '../../lib/currency';
 import PhoneInput from '../../Components/PhoneInput';
@@ -17,6 +17,7 @@ const FIELD_NAMES = {
     flight_or_train_number: 'Flight / train number',
     pickup_address: 'Address',
     notes: 'Notes',
+    accept_terms: 'Terms',
 };
 
 const titleFor = (type, bookable) =>
@@ -40,6 +41,7 @@ export default function Checkout({ type, bookable, pricePerUnit, vehicles = [], 
         with_driver: false,
         extras: {},
         notes: '',
+        accept_terms: false,
     });
 
     const [preferredVehicle, setPreferredVehicle] = useState('');
@@ -105,6 +107,12 @@ export default function Checkout({ type, bookable, pricePerUnit, vehicles = [], 
         if (problem) {
             setError('customer_phone', problem);
             document.getElementById('customer_phone')?.focus();
+            return;
+        }
+
+        if (!data.accept_terms) {
+            setError('accept_terms', 'Please tick the box to accept the Terms & Conditions.');
+            document.getElementById('accept_terms')?.focus();
             return;
         }
 
@@ -274,6 +282,24 @@ export default function Checkout({ type, bookable, pricePerUnit, vehicles = [], 
                                 </div>
                             </>
                         )}
+                    </div>
+
+                    <div>
+                        <label className="flex items-start gap-3 text-sm text-ink/80">
+                            <input
+                                id="accept_terms"
+                                type="checkbox"
+                                className="mt-1"
+                                checked={data.accept_terms}
+                                onChange={(e) => setData('accept_terms', e.target.checked)}
+                            />
+                            <span>
+                                I have read and accept the{' '}
+                                <Link href="/terms" target="_blank" className="underline text-tide">Terms &amp; Conditions</Link>
+                                {type === 'vehicle' && ', including the car hire rules and cancellation terms'}.
+                            </span>
+                        </label>
+                        {errors.accept_terms && <p className="mt-1 text-xs text-rust">{errors.accept_terms}</p>}
                     </div>
 
                     {type === 'vehicle' && (

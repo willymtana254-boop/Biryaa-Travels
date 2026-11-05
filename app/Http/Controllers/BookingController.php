@@ -9,6 +9,7 @@ use App\Models\Tour;
 use App\Models\TransferRoute;
 use App\Models\Vehicle;
 use App\Models\Villa;
+use App\Support\BookingNotifier;
 use App\Support\Currency;
 use App\Support\Pricing;
 use Illuminate\Http\JsonResponse;
@@ -108,9 +109,11 @@ class BookingController extends Controller
             'extras' => ['nullable', 'array'],
             'extras.*' => ['integer', 'min:0', 'max:10'],
             'notes' => ['nullable', 'string', 'max:1000'],
+            'accept_terms' => ['accepted'],
         ], [
             'pickup_time.required' => 'Please tell us the pickup time.',
             'guests.required' => 'Please tell us how many guests.',
+            'accept_terms.accepted' => 'Please accept the Terms & Conditions to continue.',
         ]);
 
         $data['customer_phone'] = PhoneNumber::normalize($data['customer_phone']);
@@ -157,12 +160,19 @@ class BookingController extends Controller
             'notes' => $data['notes'] ?? null,
         ]);
 
+        // Record when the customer accepted the terms (kept as proof).
+        $booking->forceFill(['terms_accepted_at' => now()])->save();
+
         if ($modelClass === Vehicle::class) {
             $driver = Driver::where('vehicle_id', $bookable->id)->first();
             if ($driver) {
                 Notification::forDriverJob($driver, $booking);
             }
         }
+
+        // Emails (customer + team) and optional texts. Sent after the page responds, never blocks the booking.
+        $saved = $booking->fresh();
+        defer(fn () => BookingNotifier::received($saved));
 
         // Car hire: send the hirer straight to ID / licence / selfie verification.
         if ($modelClass === Vehicle::class) {

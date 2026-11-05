@@ -22,6 +22,8 @@ use App\Http\Controllers\VerificationController;
 use App\Http\Controllers\Admin\VerificationController as AdminVerificationController;
 use App\Http\Controllers\TestimonialController;
 use App\Http\Controllers\Admin\TestimonialController as AdminTestimonialController;
+use App\Http\Controllers\PolicyController;
+use App\Http\Controllers\SitemapController;
 
 
 /*
@@ -52,13 +54,17 @@ Route::get('/gallery/photo/{photo}', [GalleryController::class, 'photo'])->name(
 
 Route::get('/experiences/{tour:slug}/review', [ReviewController::class, 'create'])->name('reviews.create');
 Route::post('/experiences/{tour:slug}/review', [ReviewController::class, 'store'])->middleware('throttle:10,1')->name('reviews.store');
-Route::inertia('/guest-stories', 'GuestStories')->name('guest-stories');
+Route::redirect('/guest-stories', '/testimonials', 301);
 
 Route::get('/testimonials', [TestimonialController::class, 'index'])->name('testimonials');
 Route::get('/testimonials/featured', [TestimonialController::class, 'featured'])->name('testimonials.featured');
 Route::post('/testimonials', [TestimonialController::class, 'store'])->middleware('throttle:5,10')->name('testimonials.store');
 
 Route::inertia('/privacy', 'Privacy')->name('privacy');
+Route::get('/terms', [PolicyController::class, 'terms'])->name('terms');
+
+Route::get('/sitemap.xml', [SitemapController::class, 'sitemap'])->name('sitemap');
+Route::get('/robots.txt', [SitemapController::class, 'robots'])->name('robots');
 
 Route::get('/verify', [VerificationController::class, 'lookup'])->name('verify.lookup');
 Route::post('/verify', [VerificationController::class, 'start'])->middleware('throttle:10,1')->name('verify.start');
@@ -85,6 +91,7 @@ Route::middleware('auth')->group(function () {
 Route::middleware(['auth', 'verified'])->prefix('account')->name('account.')->group(function () {
     Route::get('/bookings', [AccountBookingController::class, 'index'])->name('bookings');
 });
+
 /*
 |--------------------------------------------------------------------------
 | Admin back-office
@@ -143,4 +150,3 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'admin'])->group(fun
 });
 
 require __DIR__.'/auth.php';
-

@@ -12,6 +12,7 @@ use App\Models\TransferRoute;
 use App\Models\Vehicle;
 use App\Models\Villa;
 use App\Support\BookingLabels;
+use App\Support\BookingNotifier;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -156,7 +157,14 @@ class BookingController extends Controller
             return back()->with('error', 'Approve the hirer\'s ID, licence and selfie verification before confirming this car hire.');
         }
 
+        $before = $booking->status;
         $booking->update($data);
+
+        // Email the customer when staff confirm or cancel (sent after the page responds).
+        if (isset($data['status']) && $data['status'] !== $before) {
+            $fresh = $booking->fresh();
+            defer(fn () => BookingNotifier::statusChanged($fresh));
+        }
 
         return back()->with('success', 'Booking updated.');
     }

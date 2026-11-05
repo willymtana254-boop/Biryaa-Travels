@@ -206,6 +206,8 @@ export default function SiteLayout({ children }) {
                     © {new Date().getFullYear()} Biryaa Travels Ltd. All rights reserved.
                     <span className="mx-2">·</span>
                     <Link href="/privacy" className="hover:text-paper">Privacy Policy</Link>
+                    <span className="mx-2">·</span>
+                    <Link href="/terms" className="hover:text-paper">Terms & Conditions</Link>
                 </div>
             </footer>
         </div>

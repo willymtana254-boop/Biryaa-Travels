@@ -15,20 +15,33 @@ RUN npm run build
 
 ############################
 # Stage 2: Install PHP dependencies (Composer)
+# Runs on PHP 8.4 (same as the app image and your computer). The plain "composer:2"
+# image now ships PHP 8.6, which the locked packages do not support yet.
 ############################
-FROM composer:2 AS vendor
+FROM php:8.4-cli-alpine AS vendor
+
+COPY --from=composer:2 /usr/bin/composer /usr/bin/composer
 
 WORKDIR /app
 
 COPY database/ database/
 COPY composer.json composer.lock ./
+# The extensions listed below are installed in the final image (stage 3), so it is safe
+# to skip checking for them in this stage.
 RUN composer install \
     --no-dev \
     --no-interaction \
     --no-scripts \
     --no-progress \
     --optimize-autoloader \
-    --prefer-dist
+    --prefer-dist \
+    --ignore-platform-req=ext-gd \
+    --ignore-platform-req=ext-zip \
+    --ignore-platform-req=ext-exif \
+    --ignore-platform-req=ext-bcmath \
+    --ignore-platform-req=ext-pcntl \
+    --ignore-platform-req=ext-pdo_pgsql \
+    --ignore-platform-req=ext-pdo_mysql
 
 ############################
 # Stage 3: Runtime image

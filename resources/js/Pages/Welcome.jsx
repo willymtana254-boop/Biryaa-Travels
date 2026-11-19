@@ -1,6 +1,31 @@
-import { Head, Link } from '@inertiajs/react';
+import { useEffect } from 'react';
+import { Head, Link, router, usePage } from '@inertiajs/react';
+
+const GUEST_KEY = 'biryaa_guest';
 
 export default function Welcome() {
+    const { props } = usePage();
+    const loggedIn = !!props.auth?.user;
+
+    // Logged-in visitors, and guests who already chose "Continue as guest", skip this screen.
+    useEffect(() => {
+        let skip = loggedIn;
+        try {
+            if (localStorage.getItem(GUEST_KEY) === '1') skip = true;
+        } catch (e) {
+            /* storage blocked: just show the welcome screen */
+        }
+        if (skip) router.visit('/home', { replace: true });
+    }, []);
+
+    const rememberGuest = () => {
+        try {
+            localStorage.setItem(GUEST_KEY, '1');
+        } catch (e) {
+            /* ignore */
+        }
+    };
+
     return (
         <>
             <Head title="Welcome" />
@@ -47,6 +72,7 @@ export default function Welcome() {
                             </Link>
                             <Link
                                 href="/home"
+                                onClick={rememberGuest}
                                 className="mt-2 text-paper/70 text-sm font-medium text-center hover:text-paper transition-colors"
                             >
                                 Continue as guest →

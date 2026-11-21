@@ -1,13 +1,13 @@
-# Search & share pack (SEO)
+# Add a car with photo (admin)
 
-1. Copy into the project (adds config/seo.php, app/Support/Seo.php, SitemapController,
-   resources/views/partials/seo.blade.php, public/images/og-share.jpg).
-2. routes/web.php: add the lines in routes-to-add.php.txt.
-3. DELETE public/robots.txt if it exists (a real file would hide the route):
-       Remove-Item public\robots.txt -ErrorAction SilentlyContinue
-4. resources/views/app.blade.php: inside <head>, add this line (anywhere before @inertiaHead):
-       @include('partials.seo')
-5. Render: set APP_URL=https://biryaa-travels-1.onrender.com (your real domain) so links and the share image are https.
-6. php artisan optimize:clear
-7. Test:  /sitemap.xml   /robots.txt   and "View page source" on the home page (look for og:title).
-8. After you deploy and have your real domain: add the site to Google Search Console and submit /sitemap.xml.
+1. Copy the files into the same paths in your project (the app/, database/, resources/ folders).
+   This REPLACES: app/Http/Controllers/Admin/VehicleController.php, Pages/Admin/Vehicles/Create.jsx, Index.jsx.
+2. Add the routes in routes-to-add.txt to routes/web.php.
+3. Run:  php artisan migrate
+4. Run:  npm run build   (or keep npm run dev)
+5. Push to GitHub. Render runs the migration by itself on deploy.
+
+Requires app/Support/ImagePipeline.php (from the verification pack) and PHP GD (already in your Docker image).
+
+IMPORTANT: leave SYNC_VEHICLES unset or false on Render. "vehicles:import --prune" removes
+any car that is not in your catalog file, which would delete the cars you add here.

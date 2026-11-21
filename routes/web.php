@@ -118,6 +118,10 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'admin'])->group(fun
     Route::post('vehicles/{vehicle}/assign-driver', [AdminVehicleController::class, 'assignDriver'])->name('vehicles.assign-driver');
     Route::post('vehicles/{vehicle}/deassign-driver', [AdminVehicleController::class, 'deassignDriver'])->name('vehicles.deassign-driver');
 
+    Route::get('vehicles/{vehicle}/edit', [\App\Http\Controllers\Admin\VehicleController::class, 'edit'])->name('vehicles.edit');
+    Route::post('vehicles/{vehicle}', [\App\Http\Controllers\Admin\VehicleController::class, 'update'])->name('vehicles.update');
+    Route::delete('vehicles/{vehicle}', [\App\Http\Controllers\Admin\VehicleController::class, 'destroy'])->name('vehicles.destroy'); 
+    
     Route::get('drivers', [DriverController::class, 'index'])->name('drivers.index');
     Route::get('drivers/create', [DriverController::class, 'create'])->name('drivers.create');
     Route::post('drivers', [DriverController::class, 'store'])->name('drivers.store');
